@@ -1,0 +1,9 @@
+{
+  "name": "vaults-liquidation-bot",
+  "version": "0.0.1",
+  "description": "A piece of software that automates the bidding process for The Inter Protocol's vault liquidation auctions. Suitable for arbitrageurs and/or individual use.",
+  "main": "index.js",
+  "repository": "https://github.com/anilhelvaci/vaults-liquidation-bot",
+  "author": "Anil Helvaci",
+  "license": "MIT"
+}
