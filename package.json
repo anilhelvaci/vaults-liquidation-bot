@@ -3,7 +3,34 @@
   "version": "0.0.1",
   "description": "A piece of software that automates the bidding process for The Inter Protocol's vault liquidation auctions. Suitable for arbitrageurs and/or individual use.",
   "main": "index.js",
+  "type": "module",
   "repository": "https://github.com/anilhelvaci/vaults-liquidation-bot",
   "author": "Anil Helvaci",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test:liquidation": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/swingsetTests/test-liquidationBot.ts -s -v",
+    "test:auction": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-bidManager.js -s -v"
+  },
+  "dependencies": {
+    "ava": "^5.3.0",
+    "@agoric/zoe": "^0.26.3-u11wf.0",
+    "@agoric/boot": "^0.1.1-dev-9f8a76e.0",
+    "tsx": "^3.12.8"
+  },
+  "ava": {
+    "extensions": {
+      "js": true,
+      "ts": "module"
+    },
+    "files": [
+      "test/**/test-*.js",
+      "test/**/test-*.ts"
+    ],
+    "nodeArguments": [
+      "--loader=tsx",
+      "--no-warnings"
+    ],
+    "timeout": "20m",
+    "workerThreads": false
+  }
 }
