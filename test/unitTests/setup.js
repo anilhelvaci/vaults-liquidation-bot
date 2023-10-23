@@ -1,30 +1,44 @@
 import { E, Far } from '@endo/far';
-import buildManualTimer from "@agoric/zoe/tools/manualTimer.js";
-import { installPuppetGovernance, produceInstallations, setupBootstrap } from "@agoric/inter-protocol/test/supports.js";
-import { startEconomicCommittee } from "@agoric/inter-protocol/src/proposals/startEconCommittee.js";
-import { setupReserve, startAuctioneer } from "@agoric/inter-protocol/src/proposals/econ-behaviors.js";
-import { makeScalarMapStore } from "@agoric/store/src/stores/scalarMapStore.js";
-import { providePriceAuthorityRegistry } from "@agoric/zoe/tools/priceAuthorityRegistry.js";
-import { setUpZoeForTest } from "@agoric/zoe/tools/setup-zoe.js";
-import { makeMockTestSpace, withAmountUtils } from "@agoric/smart-wallet/test/supports.js";
-import { makeIssuerKit } from "@agoric/ertp/src/issuerKit.js";
-import { allValues, deeplyFulfilledObject, objectMap } from "@agoric/internal/src/utils.js";
+import buildManualTimer from '@agoric/zoe/tools/manualTimer.js';
+import {
+    installPuppetGovernance,
+    produceInstallations,
+    setupBootstrap,
+} from '@agoric/inter-protocol/test/supports.js';
+import { startEconomicCommittee } from '@agoric/inter-protocol/src/proposals/startEconCommittee.js';
+import {
+    setupReserve,
+    startAuctioneer,
+} from '@agoric/inter-protocol/src/proposals/econ-behaviors.js';
+import { makeScalarMapStore } from '@agoric/store/src/stores/scalarMapStore.js';
+import { providePriceAuthorityRegistry } from '@agoric/zoe/tools/priceAuthorityRegistry.js';
+import { setUpZoeForTest } from '@agoric/zoe/tools/setup-zoe.js';
+import {
+    makeMockTestSpace,
+    withAmountUtils,
+} from '@agoric/smart-wallet/test/supports.js';
+import { makeIssuerKit } from '@agoric/ertp/src/issuerKit.js';
+import {
+    allValues,
+    deeplyFulfilledObject,
+    objectMap,
+} from '@agoric/internal/src/utils.js';
 
-import bundleContractGovernor from "@agoric/governance/bundles/bundle-contractGovernor.js";
-import bundleAssetReserve from "@agoric/boot/bundles/vaults/bundle-assetReserve.js";
-import bundleAuctioneer from "@agoric/boot/bundles/vaults/bundle-auctioneer.js";
-import { unsafeMakeBundleCache } from "@agoric/swingset-vat/tools/bundleTool.js";
+import bundleContractGovernor from '@agoric/governance/bundles/bundle-contractGovernor.js';
+import bundleAssetReserve from '@agoric/boot/bundles/vaults/bundle-assetReserve.js';
+import bundleAuctioneer from '@agoric/boot/bundles/vaults/bundle-auctioneer.js';
+import { unsafeMakeBundleCache } from '@agoric/swingset-vat/tools/bundleTool.js';
 import { resolve as importMetaResolve } from 'import-meta-resolve';
-import { eventLoopIteration } from "@agoric/notifier/tools/testSupports.js";
-import { makeManualPriceAuthority } from "@agoric/zoe/tools/manualPriceAuthority.js";
-import { makeRatio } from "@agoric/zoe/src/contractSupport/ratio.js";
-import { AmountMath } from "@agoric/ertp/src/amountMath.js";
-import { BridgeId } from "@agoric/internal/src/config.js";
-import { makeStorageNodeChild } from "@agoric/internal/src/lib-chainStorage.js";
-import { makeFakeBankKit } from "@agoric/vats/tools/bank-utils.js";
-import { subscriptionTracker } from "@agoric/inter-protocol/test/metrics.js";
-import { subscribeEach } from "@agoric/notifier";
-import { NonNullish } from "@agoric/assert/src/assert.js";
+import { eventLoopIteration } from '@agoric/notifier/tools/testSupports.js';
+import { makeManualPriceAuthority } from '@agoric/zoe/tools/manualPriceAuthority.js';
+import { makeRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
+import { AmountMath } from '@agoric/ertp/src/amountMath.js';
+import { BridgeId } from '@agoric/internal/src/config.js';
+import { makeStorageNodeChild } from '@agoric/internal/src/lib-chainStorage.js';
+import { makeFakeBankKit } from '@agoric/vats/tools/bank-utils.js';
+import { subscriptionTracker } from '@agoric/inter-protocol/test/metrics.js';
+import { subscribeEach } from '@agoric/notifier';
+import { NonNullish } from '@agoric/assert/src/assert.js';
 
 const defaultParams = {
     StartFrequency: 40n,
@@ -70,7 +84,7 @@ const setUpInstallations = async zoe => {
         governor: bundleContractGovernor,
     });
     /** @type {AuctionTestInstallations} */
-        // @ts-expect-error cast
+    // @ts-expect-error cast
     return objectMap(bundles, bundle => E(zoe).install(bundle));
 };
 
@@ -114,7 +128,7 @@ const setupServices = async (t, params = defaultParams) => {
 
     const [walletFactoryDriver] = await Promise.all([
         startWalletFactory(t, space),
-        startAuctioneer(space, { auctionParams: params })
+        startAuctioneer(space, { auctionParams: params }),
     ]);
     return { space, timer, registry, walletFactoryDriver };
 };
@@ -123,15 +137,13 @@ const startWalletFactory = async (t, { consume }) => {
     const { zoe, installs } = t.context;
     const bankManager = getBankManager(t);
 
-    const [storageNode, walletBridgeManager, assetPublisher, walletSpace] = await Promise.all([
-        makeStorageNodeChild(
-            consume.chainStorage,
-            'wallet',
-        ),
-        getBridgeManager(),
-        E(bankManager).getBankForAddress('anyAddress'),
-        makeMockTestSpace(console.log)
-    ]);
+    const [storageNode, walletBridgeManager, assetPublisher, walletSpace] =
+        await Promise.all([
+            makeStorageNodeChild(consume.chainStorage, 'wallet'),
+            getBridgeManager(),
+            E(bankManager).getBankForAddress('anyAddress'),
+            makeMockTestSpace(console.log),
+        ]);
 
     await eventLoopIteration();
 
@@ -152,26 +164,26 @@ const startWalletFactory = async (t, { consume }) => {
 const getBankManager = t => {
     const { bid, collateral } = t.context;
     const fakeBankKit = makeFakeBankKit([]);
-    fakeBankKit.addAsset('ubid', 'Bid', 'Bid', { brand: bid.brand, issuer: bid.issuer });
-    fakeBankKit.addAsset('ucollateral', 'Collateral', 'Collateral', { brand: collateral.brand, issuer: collateral.issuer });
-    return Far(
-        'mockBankManager',
-        {
-            getBankForAddress: _a => fakeBankKit.bank,
-        }
-    );
+    fakeBankKit.addAsset('ubid', 'Bid', 'Bid', {
+        brand: bid.brand,
+        issuer: bid.issuer,
+    });
+    fakeBankKit.addAsset('ucollateral', 'Collateral', 'Collateral', {
+        brand: collateral.brand,
+        issuer: collateral.issuer,
+    });
+    return Far('mockBankManager', {
+        getBankForAddress: _a => fakeBankKit.bank,
+    });
 };
 
 const getBridgeManager = async () => {
     const {
-        consume: {
-            bridgeManager: bridgeManagerP,
-        }
+        consume: { bridgeManager: bridgeManagerP },
     } = await makeMockTestSpace(console.log);
     const bridgeManager = await bridgeManagerP;
 
-    return await (bridgeManager &&
-        E(bridgeManager).register(BridgeId.WALLET));
+    return await (bridgeManager && E(bridgeManager).register(BridgeId.WALLET));
 };
 
 const makeWalletFactoryDriver = (t, walletFactoryKit, { consume }) => {
@@ -197,18 +209,25 @@ export const makeTestDriver = async (t, params = defaultParams) => {
     /** @type {MapStore<Brand, { setPrice: (r: Ratio) => void }>} */
     const priceAuthorities = makeScalarMapStore();
 
-    const { space, timer, registry, walletFactoryDriver } = await setupServices(t, params);
+    const { space, timer, registry, walletFactoryDriver } = await setupServices(
+        t,
+        params,
+    );
     // Each driver needs its own mockChainStorage to avoid state pollution between tests
     const mockChainStorage =
         /** @type {import('@agoric/internal/src/storage-test-utils.js').MockChainStorageRoot} */ (
-        await space.consume.chainStorage
-    );
+            await space.consume.chainStorage
+        );
     const { auctioneerKit: auctioneerKitP } = space.consume;
     const auctioneerKit = await auctioneerKitP;
 
     const { publicFacet, creatorFacet } = auctioneerKit;
 
-    const depositCollateral = async (collateralAmount, issuerKit, offerArgs) => {
+    const depositCollateral = async (
+        collateralAmount,
+        issuerKit,
+        offerArgs,
+    ) => {
         const collateralPayment = E(issuerKit.mint).mintPayment(
             harden(collateralAmount),
         );
@@ -252,7 +271,11 @@ export const makeTestDriver = async (t, params = defaultParams) => {
      * @param {Amount<'nat'>} collateralAmount
      * @param {{ goal: Amount<'nat'> }} [limit]
      */
-    const setupCollateralAuction = async (issuerKit, collateralAmount, limit) => {
+    const setupCollateralAuction = async (
+        issuerKit,
+        collateralAmount,
+        limit,
+    ) => {
         const collateralBrand = collateralAmount.brand;
 
         const pa = makeManualPriceAuthority({
@@ -262,7 +285,12 @@ export const makeTestDriver = async (t, params = defaultParams) => {
             initialPrice: makeRatio(100n, bid.brand, 100n, collateralBrand),
         });
         priceAuthorities.init(collateralBrand, pa);
-        await registry.registerPriceAuthority(pa, collateralBrand, bid.brand, true);
+        await registry.registerPriceAuthority(
+            pa,
+            collateralBrand,
+            bid.brand,
+            true,
+        );
 
         await E(creatorFacet).addBrand(
             issuerKit.issuer,
@@ -298,13 +326,17 @@ export const makeTestDriver = async (t, params = defaultParams) => {
             },
             setGovernedParam: (name, newValue) => {
                 trace(t, 'setGovernedParam', name);
-                const auctionGov = NonNullish(t.context.puppetGovernors.auctioneer);
+                const auctionGov = NonNullish(
+                    t.context.puppetGovernors.auctioneer,
+                );
                 return E(auctionGov).changeParams(
                     harden({ changes: { [name]: newValue } }),
                 );
             },
             async updatePriceAuthority(newPrice) {
-                priceAuthorities.get(newPrice.denominator.brand).setPrice(newPrice);
+                priceAuthorities
+                    .get(newPrice.denominator.brand)
+                    .setPrice(newPrice);
                 await eventLoopIteration();
             },
             depositCollateral,
@@ -315,8 +347,10 @@ export const makeTestDriver = async (t, params = defaultParams) => {
                 return timer;
             },
             getScheduleTracker() {
-                return E.when(E(publicFacet).getScheduleUpdates(), subscription =>
-                    subscriptionTracker(t, subscribeEach(subscription)),
+                return E.when(
+                    E(publicFacet).getScheduleUpdates(),
+                    subscription =>
+                        subscriptionTracker(t, subscribeEach(subscription)),
                 );
             },
             getBookDataTracker,

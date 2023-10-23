@@ -1,9 +1,12 @@
 import { E } from '@endo/far';
-import { eventLoopIteration } from "@agoric/notifier/tools/testSupports.js";
-import { makeRatioFromAmounts } from "@agoric/zoe/src/contractSupport/ratio.js";
+import { eventLoopIteration } from '@agoric/notifier/tools/testSupports.js';
+import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
 
-const makeSmartWalletOfferSender = (offersFacet, eventLoopCallback = eventLoopIteration) => {
-    const send = async (offerSpec) => {
+const makeSmartWalletOfferSender = (
+    offersFacet,
+    eventLoopCallback = eventLoopIteration,
+) => {
+    const send = async offerSpec => {
         await E(offersFacet).executeOffer(offerSpec);
         await eventLoopCallback();
     };
@@ -15,17 +18,13 @@ const makeSmartWalletOfferSender = (offersFacet, eventLoopCallback = eventLoopIt
 harden(makeSmartWalletOfferSender);
 
 const getSmartWalletUtils = async smartWallet => {
-    const [
-        depositFacet,
-        offersFacet,
-        currentSub,
-        updateSub
-    ] = await Promise.all([
-        E(smartWallet).getDepositFacet(),
-        E(smartWallet).getOffersFacet(),
-        E(smartWallet).getCurrentSubscriber(),
-        E(smartWallet).getUpdatesSubscriber()
-    ]);
+    const [depositFacet, offersFacet, currentSub, updateSub] =
+        await Promise.all([
+            E(smartWallet).getDepositFacet(),
+            E(smartWallet).getOffersFacet(),
+            E(smartWallet).getCurrentSubscriber(),
+            E(smartWallet).getUpdatesSubscriber(),
+        ]);
 
     return harden({
         depositFacet,
@@ -37,22 +36,24 @@ const getSmartWalletUtils = async smartWallet => {
 
 const makeTestSuite = context => {
     const {
-        drivers: {
-            auctionDriver, walletFactoryDriver
-        },
+        drivers: { auctionDriver, walletFactoryDriver },
         bid,
         collateral,
     } = context;
 
     const provideWalletAndUtils = async address => {
-        const smartWallet = await walletFactoryDriver.simpleProvideWallet(address);
+        const smartWallet =
+            await walletFactoryDriver.simpleProvideWallet(address);
         const utils = await getSmartWalletUtils(smartWallet);
 
         return harden({ smartWallet, utils });
     };
 
     const setupCollateralAuction = (collateralValue = 1000n) => {
-        return auctionDriver.setupCollateralAuction(collateral, collateral.make(collateralValue));
+        return auctionDriver.setupCollateralAuction(
+            collateral,
+            collateral.make(collateralValue),
+        );
     };
 
     const fundBid = (depositFacet, value) => {
@@ -71,7 +72,7 @@ const makeTestSuite = context => {
         return auctionDriver.updatePriceAuthority(
             makeRatioFromAmounts(bid.make(newPrice), collateral.make(10n)),
         );
-    }
+    };
 
     return harden({
         provideWalletAndUtils,
@@ -85,12 +86,8 @@ const makeTestSuite = context => {
         updateCollateralPrice,
         makeBid: value => bid.make(value),
         makeCollateral: value => collateral.make(value),
-    })
+    });
 };
 harden(makeTestSuite);
 
-export {
-    makeSmartWalletOfferSender,
-    getSmartWalletUtils,
-    makeTestSuite,
-};
+export { makeSmartWalletOfferSender, getSmartWalletUtils, makeTestSuite };
