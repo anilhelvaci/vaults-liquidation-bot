@@ -21,10 +21,10 @@ import { makeRatio } from "@agoric/zoe/src/contractSupport/ratio.js";
 import { AmountMath } from "@agoric/ertp/src/amountMath.js";
 import { BridgeId } from "@agoric/internal/src/config.js";
 import { makeStorageNodeChild } from "@agoric/internal/src/lib-chainStorage.js";
-import { makeFakeBankKit } from "../../_agstate/yarn-links/@agoric/vats/tools/bank-utils.js";
-import { subscriptionTracker } from "../../_agstate/yarn-links/@agoric/inter-protocol/test/metrics.js";
-import { subscribeEach } from "../../_agstate/yarn-links/@agoric/notifier/src/subscribe.js";
-import { NonNullish } from "../../_agstate/yarn-links/@agoric/assert/src/assert.js";
+import { makeFakeBankKit } from "@agoric/vats/tools/bank-utils.js";
+import { subscriptionTracker } from "@agoric/inter-protocol/test/metrics.js";
+import { subscribeEach } from "@agoric/notifier";
+import { NonNullish } from "@agoric/assert/src/assert.js";
 
 const defaultParams = {
     StartFrequency: 40n,
@@ -133,6 +133,8 @@ const startWalletFactory = async (t, { consume }) => {
         makeMockTestSpace(console.log)
     ]);
 
+    await eventLoopIteration();
+
     const walletFactoryKit = await E(zoe).startInstance(
         installs.walletFactory,
         {},
@@ -149,7 +151,9 @@ const startWalletFactory = async (t, { consume }) => {
 
 const getBankManager = t => {
     const { bid, collateral } = t.context;
-    const fakeBankKit = makeFakeBankKit([bid, collateral]);
+    const fakeBankKit = makeFakeBankKit([]);
+    fakeBankKit.addAsset('ubid', 'Bid', 'Bid', { brand: bid.brand, issuer: bid.issuer });
+    fakeBankKit.addAsset('ucollateral', 'Collateral', 'Collateral', { brand: collateral.brand, issuer: collateral.issuer });
     return Far(
         'mockBankManager',
         {
