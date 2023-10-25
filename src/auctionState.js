@@ -1,11 +1,14 @@
 import { assert } from '@agoric/assert';
+import { StateManagerKeys } from "./constants.js";
 
 const makeAuctionStateManager = () => {
-    const state = harden({
-        bookState: null,
-        scheduleState: null,
-        governanceState: null,
-    });
+    const state = {
+        [StateManagerKeys.BID_BRAND]: null,
+        [StateManagerKeys.COLLATERAL_BRAND]: null,
+        [StateManagerKeys.BOOK_STATE]: null,
+        [StateManagerKeys.SCHEDULE_STATE]: null,
+        [StateManagerKeys.GOVERNANCE_STATE]: null,
+    }
 
     const updateState = (stateKey, data) => {
         const { [stateKey]: currentState } = state;

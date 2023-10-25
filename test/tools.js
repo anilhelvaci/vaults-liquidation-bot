@@ -1,6 +1,8 @@
 import { E } from '@endo/far';
 import { eventLoopIteration } from '@agoric/notifier/tools/testSupports.js';
 import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
+import { subscribeEach } from "@agoric/notifier";
+import { StateUpdates } from "../src/constants.js";
 
 const makeSmartWalletOfferSender = (
     offersFacet,
@@ -74,6 +76,14 @@ const makeTestSuite = context => {
         );
     };
 
+    const getSubscribersForWatcher = () => {
+        return harden({
+            bookSub: E(auctionDriver.publicFacet).getBookDataUpdates(collateral.brand),
+            govSub: E(auctionDriver.publicFacet).getSubscription(),
+            scheduleSub: E(auctionDriver.publicFacet).getScheduleUpdates(),
+        });
+    };
+
     return harden({
         provideWalletAndUtils,
         setupCollateralAuction,
@@ -86,8 +96,48 @@ const makeTestSuite = context => {
         updateCollateralPrice,
         makeBid: value => bid.make(value),
         makeCollateral: value => collateral.make(value),
+        getSubscribersForWatcher,
     });
 };
 harden(makeTestSuite);
 
-export { makeSmartWalletOfferSender, getSmartWalletUtils, makeTestSuite };
+const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub }) => {
+    let notifier;
+
+    const watch = (notify) => {
+        notifier = notify;
+        watchBook();
+        watchGovernance();
+        watchSchedule();
+    };
+
+    const watchBook = async () => {
+        for await (const bookUpdate of subscribeEach(bookSub)) {
+            notifier(StateUpdates.BOOK, bookUpdate);
+        }
+    };
+
+    const watchGovernance = async () => {
+        for await (const govUpdate of subscribeEach(govSub)) {
+            notifier(StateUpdates.GOVERNANCE, govUpdate);
+        }
+    };
+
+    const watchSchedule = async () => {
+        for await (const scheduleUpdate of subscribeEach(scheduleSub)) {
+            notifier(StateUpdates.SCHEDULE, scheduleUpdate);
+        }
+    };
+
+    return harden({
+        watch,
+    });
+};
+harden(makeMockAuctionWatcher);
+
+export {
+    makeSmartWalletOfferSender,
+    getSmartWalletUtils,
+    makeTestSuite,
+    makeMockAuctionWatcher
+};

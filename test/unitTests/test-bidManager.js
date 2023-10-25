@@ -3,11 +3,14 @@
 import { test } from '@agoric/zoe/tools/prepare-test-env-ava.js';
 import { makeTestContext, makeTestDriver } from './setup.js';
 import {
+    makeMockAuctionWatcher,
     makeSmartWalletOfferSender,
     makeTestSuite,
-} from '../swingsetTests/tools.js';
+} from '../tools.js';
 import { makeBidManager } from '../../src/bidManager.js';
 import { headValue } from '@agoric/smart-wallet/test/supports.js';
+import { eventLoopIteration } from "@agoric/notifier/tools/testSupports.js";
+import { makeArbitrager } from "../../src/arbitrager.js";
 
 const BIDDER_ADDRESS = 'agoricBidder';
 
@@ -66,4 +69,24 @@ test.serial('placed-bid-settles', async t => {
             },
         },
     });
+});
+
+test.serial('arb-manager', async t => {
+    const suite = makeTestSuite(t.context);
+    await suite.setupCollateralAuction();
+
+    await suite.updateCollateralPrice(11n);
+    const schedules = await suite.getAuctionSchedules();
+
+    // Current time 140n, current auction ends at 160n, start delay is 10n
+    t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
+    await suite.advanceTo(170n); // Start next auction
+
+    const subs = suite.getSubscribersForWatcher();
+    const arbWatcher = makeMockAuctionWatcher(subs);
+    const terminate = makeArbitrager(undefined, arbWatcher);
+
+    await eventLoopIteration();
+
+    setTimeout(() => terminate(), 3000);
 });
