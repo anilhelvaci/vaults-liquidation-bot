@@ -9,7 +9,6 @@ const main = async () => {
     const { watch, marshaller } = makeAuctionWatcher(config.bookId);
     const stateManager = makeAuctionStateManager();
     watch(stateManager.updateState);
-    await new Promise(resolve => setTimeout(resolve, 5000));
     stateManager.getState();
 };
 

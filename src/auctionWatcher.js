@@ -14,7 +14,7 @@ const makeAuctionWatcher = bookId => {
     const bookFollower = makeFollower(bookCastingSpec, leader, options);
 
     const governanceCastingSpec = makeCastingSpec(':published.auction.governance');
-    const governanceFollower = makeFollower(governanceCastingSpec, leader, options);
+    const governanceFollower = makeFollower(governanceCastingSpec, leader);
 
     const scheduleCastingSpec = makeCastingSpec(':published.auction.schedule');
     const scheduleFollower = makeFollower(scheduleCastingSpec, leader, options);
