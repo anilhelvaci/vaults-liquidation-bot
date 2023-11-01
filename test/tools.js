@@ -1,8 +1,9 @@
 import { E } from '@endo/far';
 import { eventLoopIteration } from '@agoric/notifier/tools/testSupports.js';
-import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
+import { makeRatioFromAmounts, makeRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { subscribeEach } from "@agoric/notifier";
-import { StateUpdates } from "../src/constants.js";
+import { StateManagerKeys } from '../src/constants.js';
+import { setBookState } from '../src/helpers.js';
 
 const makeSmartWalletOfferSender = (
     offersFacet,
@@ -64,7 +65,7 @@ const makeTestSuite = context => {
     };
 
     const advanceTo = absValue => {
-        return auctionDriver.advanceTo(absValue);
+        return auctionDriver.advanceTo(absValue, 'wait');
     };
 
     /**
@@ -72,7 +73,7 @@ const makeTestSuite = context => {
      */
     const updateCollateralPrice = newPrice => {
         return auctionDriver.updatePriceAuthority(
-            makeRatioFromAmounts(bid.make(newPrice), collateral.make(10n)),
+            makeRatioFromAmounts(bid.make(newPrice), collateral.make(1_000_000n)),
         );
     };
 
@@ -97,6 +98,7 @@ const makeTestSuite = context => {
         makeBid: value => bid.make(value),
         makeCollateral: value => collateral.make(value),
         getSubscribersForWatcher,
+        getBookDataTracker: auctionDriver.getBookDataTracker,
     });
 };
 harden(makeTestSuite);
@@ -113,19 +115,25 @@ const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub }) => {
 
     const watchBook = async () => {
         for await (const bookUpdate of subscribeEach(bookSub)) {
-            notifier(StateUpdates.BOOK, bookUpdate);
+            setBookState(notifier, bookUpdate);
         }
     };
 
     const watchGovernance = async () => {
         for await (const govUpdate of subscribeEach(govSub)) {
-            notifier(StateUpdates.GOVERNANCE, govUpdate);
+            notifier(StateManagerKeys.GOVERNANCE_STATE, govUpdate);
         }
     };
 
     const watchSchedule = async () => {
         for await (const scheduleUpdate of subscribeEach(scheduleSub)) {
-            notifier(StateUpdates.SCHEDULE, scheduleUpdate);
+            notifier(StateManagerKeys.SCHEDULE_STATE, scheduleUpdate);
+        }
+    };
+
+    const watchSmartWallet = async () => {
+        for await (const scheduleUpdate of subscribeEach(scheduleSub)) {
+            notifier(StateManagerKeys.SCHEDULE_STATE, scheduleUpdate);
         }
     };
 
@@ -135,9 +143,26 @@ const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub }) => {
 };
 harden(makeMockAuctionWatcher);
 
+const makeMockExternalManager = (bidBrand, colBrand) => {
+    const fetchExternalPrice = async () => {
+        // ATOM price on 31-10-2023
+        return makeRatio(
+            7_850_000n,
+            bidBrand,
+            1_000_000n,
+            colBrand
+        );
+    };
+
+    return harden({
+        fetchExternalPrice,
+    });
+};
+
 export {
     makeSmartWalletOfferSender,
     getSmartWalletUtils,
     makeTestSuite,
-    makeMockAuctionWatcher
+    makeMockAuctionWatcher,
+    makeMockExternalManager,
 };

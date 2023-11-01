@@ -1,49 +1,37 @@
 import { makeTransactionSender } from './transactionSender.js';
-import { AmountMath } from '@agoric/ertp/src/amountMath.js';
-import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
 
 const makeBidManager = (brands, offerSender = makeTransactionSender()) => {
-    const { bidBrand, collateralBrand } = brands;
-    const makeBid = bidValue => AmountMath.make(bidBrand, bidValue);
-    const makeCollateral = collateralValue =>
-        AmountMath.make(collateralBrand, collateralValue);
+    let count = 0;
 
-    const placeBid = (bidValue, maxColValue, priceVal, minColValue) => {
+    const placeBid = ({ bidAmount, maxColAmount, price, minColAmount }) => {
         const offerSpec = {
-            id: `place-bid-${Date.now()}`,
+            id: `place-bid-${count}`,
             invitationSpec: {
                 source: 'agoricContract',
                 instancePath: ['auctioneer'],
-                callPipe: [['makeBidInvitation', [collateralBrand]]],
+                callPipe: [['makeBidInvitation', [maxColAmount.brand]]],
             },
             proposal: {
                 give: {
-                    Bid: makeBid(bidValue),
+                    Bid: bidAmount,
                 },
-                ...(minColValue
+                ...(minColAmount
                     ? {
                           want: {
-                              Collateral: makeCollateral(minColValue),
+                              Collateral: minColAmount,
                           },
                       }
                     : {}),
             },
             offerArgs: {
                 exitOnBuy: true,
-                maxBuy: makeCollateral(maxColValue),
-                offerPrice: priceVal
-                    ? makeRatioFromAmounts(
-                          makeBid(priceVal),
-                          makeCollateral(maxColValue),
-                      )
-                    : makeRatioFromAmounts(
-                          makeBid(bidValue),
-                          makeCollateral(maxColValue),
-                      ),
+                maxBuy: maxColAmount,
+                offerPrice: price,
             },
         };
 
         const sendP = offerSender.send(offerSpec);
+        count++;
         return harden({ offerId: offerSpec.id, states: [sendP] });
     };
 

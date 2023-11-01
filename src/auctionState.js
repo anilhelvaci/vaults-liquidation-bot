@@ -14,15 +14,18 @@ const makeAuctionStateManager = () => {
         const { [stateKey]: currentState } = state;
         assert(currentState !== undefined, 'Invalid stateKey');
 
-        state[stateKey] = harden({
-            ...currentState,
-            ...data,
-        });
+        state[stateKey] =
+            stateKey === StateManagerKeys.BID_BRAND || StateManagerKeys.COLLATERAL_BRAND
+                ? data
+                : harden({
+                      ...currentState,
+                      ...data,
+                  });
     };
 
     const getState = () => {
         // Better to return a copy instead of the actual state
-        const copyState = state;
+        const copyState = { ...state };
         return harden(copyState);
     };
 

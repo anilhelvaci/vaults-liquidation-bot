@@ -10,6 +10,7 @@
   "scripts": {
     "test:liquidation": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/swingsetTests/test-liquidationBot.ts -s -v",
     "test:auction": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-bidManager.js -s -v",
+    "test:helpers": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-helpers.js -s -v",
     "style:check": "prettier \"**/*.{js,ts}\" --check",
     "style:fix": "prettier \"**/*.{js,ts}\" --write"
   },
@@ -19,6 +20,7 @@
     "@agoric/smart-wallet": "^0.5.4-u11wf.0",
     "@agoric/rpc": "0.6.0",
     "@endo/promise-kit": "^0.2.60",
+    "@endo/patterns": "^0.2.6",
     "ava": "^5.3.0",
     "prettier": "^3.0.3",
     "tsx": "^3.12.8"

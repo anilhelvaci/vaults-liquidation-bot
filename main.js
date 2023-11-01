@@ -12,5 +12,4 @@ const main = async () => {
     stateManager.getState();
 };
 
-
 main();

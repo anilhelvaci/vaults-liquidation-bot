@@ -45,7 +45,7 @@ const defaultParams = {
     ClockStep: 5n,
     StartingRate: 10500n,
     LowestRate: 4500n,
-    DiscountStep: 2000n,
+    DiscountStep: 500n,
     AuctionStartDelay: 10n,
     PriceLockPeriod: 3n,
 };
@@ -53,8 +53,8 @@ const defaultParams = {
 export const makeTestContext = async () => {
     const { zoe, feeMintAccessP } = await setUpZoeForTest();
 
-    const bid = withAmountUtils(makeIssuerKit('Bid'));
-    const collateral = withAmountUtils(makeIssuerKit('Collateral'));
+    const bid = withAmountUtils(makeIssuerKit('Bid', 'nat', { decimalPlaces: 6}));
+    const collateral = withAmountUtils(makeIssuerKit('Collateral', 'nat', { decimalPlaces: 6}));
 
     const installs = await deeplyFulfilledObject(setUpInstallations(zoe));
     const feeMintAccess = await feeMintAccessP;
@@ -70,16 +70,17 @@ export const makeTestContext = async () => {
 };
 
 const setUpInstallations = async zoe => {
-    const [autoRefundPath, walletFactoryPath] = await Promise.all([
+    const [autoRefundPath, walletFactoryPath, auctioneerPath] = await Promise.all([
         getPath('@agoric/zoe/src/contracts/automaticRefund.js'),
         getPath('@agoric/smart-wallet/src/walletFactory.js'),
+        getPath('@agoric/inter-protocol/src/auction/auctioneer.js'),
     ]);
     const bundleCache = await unsafeMakeBundleCache('./bundles/');
 
     const bundles = await allValues({
         autoRefund: bundleCache.load(autoRefundPath, 'AutoRefund'),
         walletFactory: bundleCache.load(walletFactoryPath, 'WalletFactory'),
-        auctioneer: bundleAuctioneer,
+        auctioneer: bundleCache.load(auctioneerPath, 'Auctioneer'),
         reserve: bundleAssetReserve,
         governor: bundleContractGovernor,
     });
