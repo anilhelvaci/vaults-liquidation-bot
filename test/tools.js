@@ -103,14 +103,14 @@ const makeTestSuite = context => {
 };
 harden(makeTestSuite);
 
-const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub }) => {
+const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub, walletUpdateSub }) => {
     let notifier;
-
     const watch = (notify) => {
         notifier = notify;
         watchBook();
         watchGovernance();
         watchSchedule();
+        watchSmartWallet();
     };
 
     const watchBook = async () => {
@@ -132,8 +132,8 @@ const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub }) => {
     };
 
     const watchSmartWallet = async () => {
-        for await (const scheduleUpdate of subscribeEach(scheduleSub)) {
-            notifier(StateManagerKeys.SCHEDULE_STATE, scheduleUpdate);
+        for await (const walletUpdate of subscribeEach(walletUpdateSub)) {
+            notifier(StateManagerKeys.SCHEDULE_STATE, walletUpdate);
         }
     };
 

@@ -1,12 +1,11 @@
 import strategyConfig from '../strategy.config.js';
 import { assert, details as X } from '@agoric/assert';
 import { BID_BRAND_NAME, StateManagerKeys } from './constants.js';
-import { assertIsRatio, makeRatioFromAmounts, floorDivideBy, floorMultiplyBy } from '@agoric/zoe/src/contractSupport/ratio.js';
+import { assertIsRatio, makeRatioFromAmounts, floorDivideBy, quantize } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { AmountMath } from '@agoric/ertp/src/amountMath.js';
 import { mustMatch } from '@endo/patterns';
 import { SPEND_TYPE_SHAPE } from './typeGuards.js';
 import { natSafeMath } from '@agoric/zoe/src/contractSupport/safeMath.js';
-import { quantize } from '../_agstate/yarn-links/@agoric/zoe/src/contractSupport/ratio.js';
 
 const getConfig = (index = 0) => {
     const strategyIndex = process.env.STRATEGY || index;
@@ -103,6 +102,43 @@ const setBookState = (notify, data) => {
 };
 harden(setBookState);
 
+/**
+ *
+ * @param {Brand} brand
+ * @param {BigInt} creditValue
+ */
+const makeCreditManager = (brand, creditValue) => {
+    let credit = AmountMath.make(brand, creditValue);
+
+    /**
+     * @param {Amount} incrementBy
+     */
+    const incrementCredit = incrementBy => {
+        credit = AmountMath.add(credit, incrementBy);
+    };
+
+    /**
+     * @param {Amount} decrementBy
+     */
+    const decrementCredit = decrementBy => {
+        credit = AmountMath.subtract(credit, decrementBy);
+    };
+
+    /**
+     * @param {Amount} bidAmount
+     */
+    const checkEnoughBalance = bidAmount => {
+        return AmountMath.isGTE(credit, bidAmount);
+    };
+
+    return harden({
+        incrementCredit,
+        decrementCredit,
+        checkEnoughBalance,
+    });
+};
+harden(makeCreditManager);
+
 export {
     getConfig,
     getBrandsFromBook,
@@ -111,4 +147,5 @@ export {
     calculateDPExactDelta,
     calculateBidUtils,
     setBookState,
+    makeCreditManager,
 };

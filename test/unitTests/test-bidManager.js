@@ -98,10 +98,8 @@ test.serial('arb-manager', async t => {
     const colBrand = suite.getCollateralBrand();
     const denomAmount = suite.makeCollateral(DENOM_VALUE);
 
-    const bookTracker = await suite.getBookDataTracker(colBrand);
-
     const subs = suite.getSubscribersForWatcher();
-    const arbWatcher = makeMockAuctionWatcher(subs);
+    const arbWatcher = makeMockAuctionWatcher({ ...subs, walletUpdateSub: utils.updateSub });
     const stateManager = makeAuctionStateManager();
     const offerSender = makeSmartWalletOfferSender(utils.offersFacet);
     const bidManager = makeBidManager(

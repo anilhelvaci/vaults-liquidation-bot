@@ -22,6 +22,7 @@ const StateManagerKeys = harden({
     BOOK_STATE: 'bookState',
     SCHEDULE_STATE: 'scheduleState',
     GOVERNANCE_STATE: 'governanceState',
+    WALLET_UPDATE: 'walletUpdate',
 });
 
 export {
