@@ -44,7 +44,7 @@ const defaultParams = {
     StartFrequency: 40n,
     ClockStep: 5n,
     StartingRate: 10500n,
-    LowestRate: 4500n,
+    LowestRate: 6500n,
     DiscountStep: 500n,
     AuctionStartDelay: 10n,
     PriceLockPeriod: 3n,

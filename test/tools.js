@@ -3,7 +3,10 @@ import { eventLoopIteration } from '@agoric/notifier/tools/testSupports.js';
 import { makeRatioFromAmounts, makeRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { subscribeEach } from "@agoric/notifier";
 import { StateManagerKeys } from '../src/constants.js';
-import { setBookState } from '../src/helpers.js';
+import { getConfig, setBookState } from '../src/helpers.js';
+import { makeAuctionStateManager } from '../src/auctionState.js';
+import { makeBidManager } from '../src/bidManager.js';
+import { makeArbitrageManager } from '../src/arbitrageManager.js';
 
 const makeSmartWalletOfferSender = (
     offersFacet,
@@ -85,6 +88,22 @@ const makeTestSuite = context => {
         });
     };
 
+    const initWorld = async ({
+        bidderAddress,
+        depositColValue = 50_000_000n,
+        startPriceVal = 7_850_000n,
+        configIndex = 0,
+    }) => {
+        const provisioned = await provideWalletAndUtils(bidderAddress);
+        await setupCollateralAuction(depositColValue);
+        const config = getConfig(configIndex);
+        await fundBid(provisioned.utils.depositFacet, config.credit);
+
+        await updateCollateralPrice(startPriceVal);
+
+        return harden(provisioned);
+    };
+
     return harden({
         provideWalletAndUtils,
         setupCollateralAuction,
@@ -99,6 +118,7 @@ const makeTestSuite = context => {
         makeCollateral: value => collateral.make(value),
         getSubscribersForWatcher,
         getBookDataTracker: auctionDriver.getBookDataTracker,
+        initWorld,
     });
 };
 harden(makeTestSuite);
@@ -144,20 +164,50 @@ const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub, walletUpdateSub 
 harden(makeMockAuctionWatcher);
 
 const makeMockExternalManager = (bidBrand, colBrand) => {
-    const fetchExternalPrice = async () => {
+    let shouldSuccess = true;
+
+    const fetchExternalPrice = () => {
         // ATOM price on 31-10-2023
-        return makeRatio(
+        const mockPrice = makeRatio(
             7_850_000n,
             bidBrand,
             1_000_000n,
-            colBrand
+            colBrand,
         );
+
+        return shouldSuccess ? Promise.resolve(mockPrice) : Promise.reject(new Error('MockReject'));
     };
 
     return harden({
         fetchExternalPrice,
+        setShouldSuccess: result => shouldSuccess = result,
     });
 };
+
+const makeMockArbitrager = (suite, utils) => {
+    const subs = suite.getSubscribersForWatcher();
+    const bidBrand = suite.getBidBrand();
+    const colBrand = suite.getCollateralBrand();
+
+    const arbWatcher = makeMockAuctionWatcher({ ...subs, walletUpdateSub: utils.updateSub });
+    const stateManager = makeAuctionStateManager();
+    const offerSender = makeSmartWalletOfferSender(utils.offersFacet);
+    const bidManager = makeBidManager(offerSender);
+    const externalManager = makeMockExternalManager(bidBrand, colBrand);
+    const arbitrageManager = makeArbitrageManager(stateManager.getState, externalManager, bidManager);
+    const notify = (type, data) => {
+        stateManager.updateState(type, data);
+        arbitrageManager.onStateUpdate(type);
+    };
+
+    return harden({
+        startArbing: () => arbWatcher.watch(notify),
+        arbitrageManager,
+        externalManager,
+        subs,
+    })
+};
+harden(makeMockAuctionWatcher);
 
 export {
     makeSmartWalletOfferSender,
@@ -165,4 +215,5 @@ export {
     makeTestSuite,
     makeMockAuctionWatcher,
     makeMockExternalManager,
+    makeMockArbitrager,
 };

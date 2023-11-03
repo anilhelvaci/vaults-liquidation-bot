@@ -93,7 +93,7 @@ harden(calculateBidUtils);
 
 const setBookState = (notify, data) => {
     const { currentPriceLevel } = data;
-    const quantizedPrice = quantize(currentPriceLevel, 1_000_000n);
+    const quantizedPrice = currentPriceLevel ? quantize(currentPriceLevel, 1_000_000n) : currentPriceLevel;
     const update = harden({
         ...data,
         currentPriceLevel: quantizedPrice
@@ -135,6 +135,7 @@ const makeCreditManager = (brand, creditValue) => {
         incrementCredit,
         decrementCredit,
         checkEnoughBalance,
+        getCredit: () => harden({ ...credit }),
     });
 };
 harden(makeCreditManager);

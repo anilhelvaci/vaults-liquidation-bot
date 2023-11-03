@@ -1,6 +1,6 @@
 import { makeTransactionSender } from './transactionSender.js';
 
-const makeBidManager = (brands, offerSender = makeTransactionSender()) => {
+const makeBidManager = (offerSender = makeTransactionSender()) => {
     let count = 0;
 
     const placeBid = ({ bidAmount, maxColAmount, price, minColAmount }) => {

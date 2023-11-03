@@ -8,20 +8,20 @@ import {
 import { StateManagerKeys } from './constants.js';
 import { mustMatch } from '@endo/patterns';
 import { DELTA_SHAPE } from './typeGuards.js';
-import { ratioGTE } from '@agoric/zoe/src/contractSupport/ratio.js';
+import { ratioGTE, assertIsRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { assert, details as X } from '@agoric/assert';
 
 const makeArbitrageManager = (getAuctionState, externalManager, bidManager) => {
     const arbConfig = getConfig();
+    const bidLog = [];
+    
     let creditManager;
 
     const onStateUpdate = (type, data = null) => {
         switch (type) {
             case StateManagerKeys.BOOK_STATE:
-                maybePlaceBid();
-                break;
-            case StateManagerKeys.BID_BRAND:
-                initCreditManager();
+                const bidPromise = maybePlaceBid();
+                bidLog.push(bidPromise);
                 break;
             case StateManagerKeys.WALLET_UPDATE:
                 handleWalletUpdate(data);
@@ -31,12 +31,22 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager) => {
                 break;
         }
     };
-    
-    const initCreditManager = () => {
-        if (creditManager) return;
-        
-        const { bidBrand } = getAuctionState();
-        creditManager = makeCreditManager(bidBrand, arbConfig.credit);
+
+    const checkAndInitState = () => {
+        const {
+            bidBrand,
+            colBrand,
+            bookState: { currentPriceLevel },
+        } = getAuctionState();
+
+        if (!bidBrand || !colBrand || !currentPriceLevel) return false;
+        assertIsRatio(currentPriceLevel);
+
+        if (!creditManager) {
+            creditManager = makeCreditManager(bidBrand, arbConfig.credit);
+        }
+
+        return true;
     };
 
     const calculateDesiredPrice = (state, externalPrice) => {
@@ -52,9 +62,9 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager) => {
     };
 
     const maybePlaceBid = async () => {
+        if (!checkAndInitState()) return harden({ msg: 'State not initialized', data: { ...getAuctionState() } });
+
         const stateSnapshot = getAuctionState();
-        assert(stateSnapshot.bookState.currentPriceLevel !== null, X`Auction must be active: ${stateSnapshot}`);
-        assert(creditManager, X`CreditManager undefined`);
 
         const externalPrice = await externalManager.fetchExternalPrice();
         console.log('STATE', { currentPriceLevel: stateSnapshot.bookState.currentPriceLevel });
@@ -62,13 +72,25 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager) => {
 
         if (ratioGTE(worstDesiredPrice, stateSnapshot.bookState.currentPriceLevel)) {
             const bidUtils = calculateBidUtils(stateSnapshot, worstDesiredPrice, harden(arbConfig));
-            if (!creditManager.checkEnoughBalance(bidUtils.bidAmount)) return;
-            console.log('YES_BID', { ...bidUtils });
+            if (!creditManager.checkEnoughBalance(bidUtils.bidAmount))
+                return harden({
+                    msg: 'Insufficient credit',
+                    data: { bidUtils, credit: creditManager.getCredit() },
+                });
+            
             bidManager.placeBid(bidUtils);
             creditManager.decrementCredit(bidUtils.bidAmount);
-            return;
+            return harden({
+                msg: 'Bid Placed',
+                data: {
+                    bidUtils,
+                    worstDesiredPrice,
+                    externalPrice,
+                    currentPriceLevel: stateSnapshot.bookState.currentPriceLevel,
+                },
+            });
         }
-        console.log('NO_BID');
+        return harden({ msg: 'No Bid', data: { ...stateSnapshot, worstDesiredPrice, externalPrice } });
     };
 
     const handleWalletUpdate = data => {
@@ -84,6 +106,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager) => {
 
     return harden({
         onStateUpdate,
+        getBidLog: () => [...bidLog],
     });
 };
 harden(makeArbitrageManager);

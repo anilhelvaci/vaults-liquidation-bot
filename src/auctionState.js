@@ -14,15 +14,30 @@ const makeAuctionStateManager = () => {
         const { [stateKey]: currentState } = state;
         assert(currentState !== undefined, 'Invalid stateKey');
 
-        state[stateKey] =
-            stateKey === StateManagerKeys.BID_BRAND || StateManagerKeys.COLLATERAL_BRAND
-                ? data
-                : harden({
-                      ...currentState,
-                      ...data,
-                  });
+        state[stateKey] = harden({
+            ...currentState,
+            ...data,
+        });
+        
+        if (stateKey === StateManagerKeys.BOOK_STATE) setBrands(data);
     };
 
+    const setBrands = data => {
+        const { currentPriceLevel } = data;
+        if (
+            currentPriceLevel === null ||
+            (state[StateManagerKeys.BID_BRAND] && state[StateManagerKeys.COLLATERAL_BRAND])
+        ) return;
+
+        const {
+            numerator: { brand: bidBrand },
+            denominator: { brand: colBrand },
+        } = currentPriceLevel;
+
+        state[StateManagerKeys.BID_BRAND] = bidBrand;
+        state[StateManagerKeys.COLLATERAL_BRAND] = colBrand;
+    };
+    
     const getState = () => {
         // Better to return a copy instead of the actual state
         const copyState = { ...state };
