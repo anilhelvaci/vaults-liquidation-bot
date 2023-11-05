@@ -204,6 +204,7 @@ const makeMockArbitrager = (suite, utils) => {
         startArbing: () => arbWatcher.watch(notify),
         arbitrageManager,
         externalManager,
+        bidManager,
         subs,
     })
 };

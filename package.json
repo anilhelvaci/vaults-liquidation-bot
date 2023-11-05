@@ -10,6 +10,7 @@
   "scripts": {
     "test:liquidation": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/swingsetTests/test-liquidationBot.ts -s -v",
     "test:bot": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-liquidationBot.js -s -v",
+    "test:state": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-auctionState.js -s -v",
     "test:helpers": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-helpers.js -s -v",
     "style:check": "prettier \"**/*.{js,ts}\" --check",
     "style:fix": "prettier \"**/*.{js,ts}\" --write"

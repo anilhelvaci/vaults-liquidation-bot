@@ -32,29 +32,21 @@ test('initial', async t => {
 
 test.serial('placed-bid-settles', async t => {
     const suite = makeTestSuite(t.context);
-    const { utils } = await suite.provideWalletAndUtils(BIDDER_ADDRESS);
-    await suite.setupCollateralAuction();
-    await suite.fundBid(utils.depositFacet, 1000n);
-
-    const offerSender = makeSmartWalletOfferSender(utils.offersFacet);
-    const bidManager = makeBidManager(
-        {
-            collateralBrand: suite.getCollateralBrand(),
-            bidBrand: suite.getBidBrand(),
-        },
-        offerSender,
-    );
-    t.log(bidManager);
-
-    await suite.updateCollateralPrice(11n);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS, startPriceVal: 1_100_000n });
     const schedules = await suite.getAuctionSchedules();
 
     // Current time 140n, current auction ends at 160n, start delay is 10n
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
     await suite.advanceTo(170n); // Start next auction
 
+    const { bidManager } = makeMockArbitrager(suite, utils);
+
     // 350 - 300 * (1,1 * 1,05) = 3,5 Bid and 300 Collateral in payouts
-    const { offerId, states } = bidManager.placeBid(350n, 300n);
+    const { offerId, states } = bidManager.placeBid({
+        bidAmount: suite.makeBid(350n),
+        maxColAmount: suite.makeCollateral(300n),
+        price: makeRatioFromAmounts(suite.makeBid(350n), suite.makeCollateral(300n)),
+    });
     await Promise.all(states);
 
     const walletState = await headValue(utils.updateSub);
@@ -70,6 +62,27 @@ test.serial('placed-bid-settles', async t => {
             },
         },
     });
+});
+
+test.serial('placed-bid-throws', async t => {
+    const suite = makeTestSuite(t.context);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS, startPriceVal: 1_100_000n });
+    const schedules = await suite.getAuctionSchedules();
+
+    // Current time 140n, current auction ends at 160n, start delay is 10n
+    t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
+    await suite.advanceTo(170n); // Start next auction
+
+    const { bidManager } = makeMockArbitrager(suite, utils);
+
+    // 350 - 300 * (1,1 * 1,05) = 3,5 Bid and 300 Collateral in payouts
+    const { states } = bidManager.placeBid({
+        bidAmount: suite.makeBid(350_000_000n), // Exceed amount present in wallet
+        maxColAmount: suite.makeCollateral(30_000_000n),
+        minColAmount: suite.makeCollateral(35_000_000n),
+        price: makeRatioFromAmounts(suite.makeBid(350n), suite.makeCollateral(300n)),
+    });
+    await t.throwsAsync(Promise.all(states));
 });
 
 test.serial('arb-manager', async t => {
@@ -131,6 +144,7 @@ test.serial('arb-manager', async t => {
     });
 
     const walletState = await headValue(utils.updateSub);
+    console.log('WALLET_STATE: ', walletState)
     t.like(walletState, {
         updated: 'offerStatus',
         status: {

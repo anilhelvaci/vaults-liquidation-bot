@@ -11,8 +11,15 @@ import { DELTA_SHAPE } from './typeGuards.js';
 import { ratioGTE, assertIsRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { assert, details as X } from '@agoric/assert';
 
-const makeArbitrageManager = (getAuctionState, externalManager, bidManager) => {
-    const arbConfig = getConfig();
+/**
+ *
+ * @param getAuctionState
+ * @param externalManager
+ * @param bidManager
+ * @param arbConfig
+ * @return {{getBidLog: (function(): *[]), onStateUpdate: onStateUpdate}}
+ */
+const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbConfig) => {
     const bidLog = [];
     
     let creditManager;
