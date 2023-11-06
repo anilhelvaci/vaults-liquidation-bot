@@ -153,7 +153,7 @@ const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub, walletUpdateSub 
 
     const watchSmartWallet = async () => {
         for await (const walletUpdate of subscribeEach(walletUpdateSub)) {
-            notifier(StateManagerKeys.SCHEDULE_STATE, walletUpdate);
+            notifier(StateManagerKeys.WALLET_UPDATE, walletUpdate);
         }
     };
 
@@ -184,17 +184,19 @@ const makeMockExternalManager = (bidBrand, colBrand) => {
     });
 };
 
-const makeMockArbitrager = (suite, utils) => {
+const makeMockArbitrager = (suite, utils, configIndex) => {
     const subs = suite.getSubscribersForWatcher();
     const bidBrand = suite.getBidBrand();
     const colBrand = suite.getCollateralBrand();
 
+    const arbConfig = getConfig(configIndex);
+
     const arbWatcher = makeMockAuctionWatcher({ ...subs, walletUpdateSub: utils.updateSub });
-    const stateManager = makeAuctionStateManager();
+    const stateManager = makeAuctionStateManager(arbConfig);
     const offerSender = makeSmartWalletOfferSender(utils.offersFacet);
     const bidManager = makeBidManager(offerSender);
     const externalManager = makeMockExternalManager(bidBrand, colBrand);
-    const arbitrageManager = makeArbitrageManager(stateManager.getState, externalManager, bidManager);
+    const arbitrageManager = makeArbitrageManager(stateManager.getState, externalManager, bidManager, arbConfig);
     const notify = (type, data) => {
         stateManager.updateState(type, data);
         arbitrageManager.onStateUpdate(type);

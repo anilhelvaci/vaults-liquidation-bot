@@ -61,7 +61,9 @@ const makeAuctionStateManager = arbConfig => {
         if (!checkInitialized()) return;
 
         const { creditManager } = state;
-        const { status } = data;
+        const { status, updated } = data;
+
+        if (updated === 'balance') return;
 
         writeOffer(data);
 
@@ -71,7 +73,8 @@ const makeAuctionStateManager = arbConfig => {
             const { Bid: excessBidAmount } = status.payouts;
             if (!excessBidAmount) return;
             creditManager.incrementCredit(excessBidAmount);
-        } else {
+        }
+        else if (!status.payouts && status.numWantsSatisfied && status.numWantsSatisfied === 1) {
             const { give: { Bid: paidBidAmount }} = status.proposal;
             creditManager.decrementCredit(paidBidAmount);
         }

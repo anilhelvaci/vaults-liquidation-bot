@@ -1,15 +1,9 @@
-import {
-    calculateDPExactDelta,
-    calculateDPPercentageDelta,
-    getConfig,
-    calculateBidUtils,
-    makeCreditManager,
-} from './helpers.js';
+import { calculateDPExactDelta, calculateDPPercentageDelta, calculateBidUtils } from './helpers.js';
 import { StateManagerKeys } from './constants.js';
 import { mustMatch } from '@endo/patterns';
 import { DELTA_SHAPE } from './typeGuards.js';
-import { ratioGTE, assertIsRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
-import { assert, details as X } from '@agoric/assert';
+import { ratioGTE } from '@agoric/zoe/src/contractSupport/ratio.js';
+import { makeScalarBigMapStore } from '@agoric/vat-data';
 
 /**
  *
@@ -21,39 +15,23 @@ import { assert, details as X } from '@agoric/assert';
  */
 const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbConfig) => {
     const bidLog = [];
+    const bidHistory = makeScalarBigMapStore('Bid History');
     
-    let creditManager;
-
-    const onStateUpdate = (type, data = null) => {
+    const onStateUpdate = type => {
         switch (type) {
             case StateManagerKeys.BOOK_STATE:
-                const bidPromise = maybePlaceBid();
+                const stateSnapshot = getAuctionState();
+                handleHistoryOnBookUpdate(stateSnapshot);
+                const bidPromise = maybePlaceBid(stateSnapshot);
                 bidLog.push(bidPromise);
                 break;
             case StateManagerKeys.WALLET_UPDATE:
-                handleWalletUpdate(data);
+                handleHistoryOnWalletUpdate();
                 break;
             default:
                 console.log('Not book update');
                 break;
         }
-    };
-
-    const checkAndInitState = () => {
-        const {
-            bidBrand,
-            colBrand,
-            bookState: { currentPriceLevel },
-        } = getAuctionState();
-
-        if (!bidBrand || !colBrand || !currentPriceLevel) return false;
-        assertIsRatio(currentPriceLevel);
-
-        if (!creditManager) {
-            creditManager = makeCreditManager(bidBrand, arbConfig.credit);
-        }
-
-        return true;
     };
 
     const calculateDesiredPrice = (state, externalPrice) => {
@@ -68,52 +46,107 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
         }
     };
 
-    const maybePlaceBid = async () => {
-        if (!checkAndInitState()) return harden({ msg: 'State not initialized', data: { ...getAuctionState() } });
+    const maybePlaceBid = async stateSnapshot => {
+        const {
+            initialized,
+            creditManager,
+            bookState: { currentPriceLevel },
+        } = stateSnapshot;
 
-        const stateSnapshot = getAuctionState();
+        if (!initialized) return harden({ msg: 'State not initialized', data: { ...getAuctionState() } });
 
         const externalPrice = await externalManager.fetchExternalPrice();
-        console.log('STATE', { currentPriceLevel: stateSnapshot.bookState.currentPriceLevel });
         const worstDesiredPrice = calculateDesiredPrice(stateSnapshot, externalPrice);
 
-        if (ratioGTE(worstDesiredPrice, stateSnapshot.bookState.currentPriceLevel)) {
+        if (ratioGTE(worstDesiredPrice, currentPriceLevel)) {
             const bidUtils = calculateBidUtils(stateSnapshot, worstDesiredPrice, harden(arbConfig));
             if (!creditManager.checkEnoughBalance(bidUtils.bidAmount))
                 return harden({
                     msg: 'Insufficient credit',
                     data: { bidUtils, credit: creditManager.getCredit() },
                 });
-            
-            bidManager.placeBid(bidUtils);
-            creditManager.decrementCredit(bidUtils.bidAmount);
+
+            if (!checkHistory(currentPriceLevel.numerator.value))
+                return harden({
+                    msg: 'Already existing bid. Either pending or success',
+                    data: { currentBid: bidHistory.get(currentPriceLevel.numerator.value) },
+                });
+
+            const { offerId } = bidManager.placeBid(bidUtils);
+            bidHistory.set(currentPriceLevel.numerator.value, harden({ offerId, state: 'pending'}));
             return harden({
                 msg: 'Bid Placed',
                 data: {
+                    offerId,
                     bidUtils,
                     worstDesiredPrice,
                     externalPrice,
-                    currentPriceLevel: stateSnapshot.bookState.currentPriceLevel,
+                    currentPriceLevel,
                 },
             });
         }
         return harden({ msg: 'No Bid', data: { ...stateSnapshot, worstDesiredPrice, externalPrice } });
     };
 
-    const handleWalletUpdate = data => {
-        assert(data, X`No data for wallet update: ${data}`);
+    /**
+     * - If the currentPriceLevel is null clear the map
+     * - If its numerator amount is present in the map do nothing
+     * - If it's not present initialize it with false
+     * @param stateSnapshot
+     */
+    const handleHistoryOnBookUpdate = stateSnapshot => {
+        const {
+            bookState: { currentPriceLevel },
+        } = stateSnapshot;
+        
+        if (currentPriceLevel === null) return bidHistory.clear();
+        if (bidHistory.has(currentPriceLevel.numerator.value)) return;
 
-        if (data.hasOwnProperty('payouts') && data.payouts.hasOwnProperty('Bid') && creditManager) {
-            const {
-                payouts: { Bid: refundAmount },
-            } = data;
-            creditManager.incrementCredit(refundAmount);
+        bidHistory.init(currentPriceLevel.numerator.value, harden({}));
+    };
+
+    const handleHistoryOnWalletUpdate = () => {
+        const {
+            offers,
+            bookState: { currentPriceLevel },
+        } = getAuctionState();
+
+        if (currentPriceLevel === null) return;
+
+        const bidData = bidHistory.get(currentPriceLevel.numerator.value);
+        const latestMatchingOffer = [...offers].reverse().find(([id, _]) => id === bidData.offerId);
+
+        if(!latestMatchingOffer) return;
+
+        const [_, offerData] = latestMatchingOffer;
+
+        const findBidState = () => {
+            const { status: { error, numWantsSatisfied, payouts }} = offerData;
+
+            if (error) return 'error';
+            if (numWantsSatisfied && numWantsSatisfied === 1 && payouts) return 'success';
         }
+
+        const updatedData = harden({
+            ...bidData,
+            state: findBidState(),
+        });
+
+        bidHistory.set(currentPriceLevel.numerator.value, updatedData);
+    };
+
+    const checkHistory = key => {
+        const bidData = bidHistory.get(key);
+
+        if (!bidData.offerId) return true;
+        if (bidData.state === 'error') return true; // Go ahead and bid
+
+        return false;
     };
 
     return harden({
         onStateUpdate,
-        getBidLog: () => [...bidLog],
+        getBidLog: () => harden([...bidLog]),
     });
 };
 harden(makeArbitrageManager);
