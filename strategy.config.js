@@ -18,6 +18,7 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
+        retryInterval: 30 * 1000 // 30 seconds in ms
     },
     {
         delta: {
@@ -31,6 +32,7 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
+        retryInterval: 30 * 1000 // 30 seconds in ms
     },
     {
         delta: {
@@ -43,6 +45,7 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
+        retryInterval: 30 * 1000 // 30 seconds in ms
     },
     {
         delta: {
@@ -56,5 +59,6 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
+        retryInterval: 30 * 1000 // 30 seconds in ms
     },
 ];

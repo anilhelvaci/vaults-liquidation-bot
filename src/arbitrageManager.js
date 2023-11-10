@@ -16,6 +16,8 @@ import { makeScalarBigMapStore } from '@agoric/vat-data';
 const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbConfig) => {
     const bidLog = [];
     const bidHistory = makeScalarBigMapStore('Bid History');
+
+    let retryCount = 0;
     
     const onStateUpdate = type => {
         switch (type) {
@@ -46,6 +48,30 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
         }
     };
 
+    /**
+     * - retry limit must not be exceeded
+     * - retry must be before the next clock step
+     */
+    const checkCanRetry = () => {
+
+    };
+
+    const tryExternalPrice = async () => {
+        try {
+            const externalPrice = await externalManager.fetchExternalPrice();
+            return harden({ code: 'success', result: externalPrice });
+        } catch (e) {
+            if (!checkCanRetry()) return harden({ code: 'error - no retry', result: e });
+
+            setTimeout(() => {
+                const stateSnapshot = getAuctionState();
+                const bidPromise = maybePlaceBid(stateSnapshot);
+                bidLog.push(bidPromise);
+            }, arbConfig.retryInterval);
+            return harden({ code: 'error', result: e });
+        }
+    };
+    
     const maybePlaceBid = async stateSnapshot => {
         const {
             initialized,
@@ -55,7 +81,14 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
 
         if (!initialized) return harden({ msg: 'State not initialized', data: { ...getAuctionState() } });
 
-        const externalPrice = await externalManager.fetchExternalPrice();
+        const tryMarketPrice = await tryExternalPrice();
+        if (tryMarketPrice.code === 'error')
+            return harden({
+                msg: 'Error when fetching market price',
+                data: tryMarketPrice.result,
+            });
+
+        const { result: externalPrice } = tryMarketPrice;
         const worstDesiredPrice = calculateDesiredPrice(stateSnapshot, externalPrice);
 
         if (ratioGTE(worstDesiredPrice, currentPriceLevel)) {
