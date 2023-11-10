@@ -1,5 +1,5 @@
 import { calculateDPExactDelta, calculateDPPercentageDelta, calculateBidUtils } from './helpers.js';
-import { StateManagerKeys } from './constants.js';
+import { MILI_SEC, RETRY_LIMIT, StateManagerKeys } from './constants.js';
 import { mustMatch } from '@endo/patterns';
 import { DELTA_SHAPE } from './typeGuards.js';
 import { ratioGTE } from '@agoric/zoe/src/contractSupport/ratio.js';
@@ -53,7 +53,16 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
      * - retry must be before the next clock step
      */
     const checkCanRetry = () => {
+        if (retryCount >= RETRY_LIMIT) return false;
 
+        const {
+            scheduleState: {
+                nextDescendingStepTime: { absValue },
+            },
+        } = getAuctionState();
+        const now = Date.now();
+
+        return BigInt(now + arbConfig.retryInterval) < absValue * MILI_SEC;
     };
 
     const tryExternalPrice = async () => {
@@ -61,13 +70,14 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
             const externalPrice = await externalManager.fetchExternalPrice();
             return harden({ code: 'success', result: externalPrice });
         } catch (e) {
-            if (!checkCanRetry()) return harden({ code: 'error - no retry', result: e });
+            if (!checkCanRetry()) return harden({ code: 'error', result: e });
 
             setTimeout(() => {
                 const stateSnapshot = getAuctionState();
                 const bidPromise = maybePlaceBid(stateSnapshot);
                 bidLog.push(bidPromise);
             }, arbConfig.retryInterval);
+            retryCount += 1;
             return harden({ code: 'error', result: e });
         }
     };
@@ -136,6 +146,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
         if (bidHistory.has(currentPriceLevel.numerator.value)) return;
 
         bidHistory.init(currentPriceLevel.numerator.value, harden({}));
+        retryCount = 0;
     };
 
     const handleHistoryOnWalletUpdate = () => {

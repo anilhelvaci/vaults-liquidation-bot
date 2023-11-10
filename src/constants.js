@@ -6,6 +6,9 @@ const StateUpdates = {
 };
 harden(StateUpdates);
 
+const RETRY_LIMIT = 3;
+const MILI_SEC = 1000n;
+
 const BID_BRAND_NAME = 'IST';
 
 const StateManagerKeys = harden({
@@ -22,4 +25,6 @@ export {
     StateUpdates,
     BID_BRAND_NAME,
     StateManagerKeys,
+    RETRY_LIMIT,
+    MILI_SEC,
 };
