@@ -70,14 +70,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
             const externalPrice = await externalManager.fetchExternalPrice();
             return harden({ code: 'success', result: externalPrice });
         } catch (e) {
-            if (!checkCanRetry()) return harden({ code: 'error', result: e });
-
-            setTimeout(() => {
-                const stateSnapshot = getAuctionState();
-                const bidPromise = maybePlaceBid(stateSnapshot);
-                bidLog.push(bidPromise);
-            }, arbConfig.retryInterval);
-            retryCount += 1;
+            registerRetry();
             return harden({ code: 'error', result: e });
         }
     };
@@ -178,15 +171,19 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
 
         bidHistory.set(currentPriceLevel.numerator.value, updatedData);
 
-        if (updatedData.state === 'error') {
-            setTimeout(() => {
-                const stateSnapshot = getAuctionState();
-                const bidPromise = maybePlaceBid(stateSnapshot);
-                bidLog.push(bidPromise);
-            }, arbConfig.retryInterval);
-            retryCount += 1;
-        }
+        if (updatedData.state === 'error') registerRetry();
     };
+
+    const registerRetry = () => {
+        if (!checkCanRetry()) return;
+
+        setTimeout(() => {
+            const stateSnapshot = getAuctionState();
+            const bidPromise = maybePlaceBid(stateSnapshot);
+            bidLog.push(bidPromise);
+        }, arbConfig.retryInterval);
+        retryCount += 1;
+    }
 
     const checkHistory = key => {
         const bidData = bidHistory.get(key);
