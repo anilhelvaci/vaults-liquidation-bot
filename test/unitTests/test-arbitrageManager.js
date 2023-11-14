@@ -167,7 +167,7 @@ test('sequential', async t => {
  * - If not we wait for the next clock step
  */
 test('retry-on-price-fetch-error', async t => {
-    const { arbitrageManager, notify, makePrice, config, externalManager } = t.context;
+    const { arbitrageManager, notify, makePrice, externalManager } = t.context;
 
     externalManager.setShouldSuccess(false); // Make sure external manager throws
 
@@ -228,4 +228,84 @@ test('retry-on-price-fetch-error', async t => {
     });
 
     t.is(bidLogNewClockStep.length, 9);
+});
+
+/**
+ * - Successfully place bid on the auction
+ * - Bid result with an offer error on zoe
+ * - Should register a retry
+ */
+test('retry-on-offer-error', async t => {
+    const { arbitrageManager, notify, makePrice, config, moola } = t.context;
+
+    // initialize state
+    notify(StateManagerKeys.BOOK_STATE, { currentPriceLevel: makePrice(7_065_000n) });
+    notify(StateManagerKeys.SCHEDULE_STATE, {
+        nextDescendingStepTime: {
+            absValue: BigInt(Date.now()) / MILI_SEC + 60n * MILI_SEC,
+            timerBrand: {},
+        },
+    });
+
+    const bidLogOne = arbitrageManager.getBidLog();
+    const [pendingBid] = await Promise.all(bidLogOne);
+
+    t.deepEqual(pendingBid, {
+        msg: 'Bid Placed',
+        data: {
+            offerId: 'place-bid-0',
+            bidUtils: {
+                bidAmount: moola.make(config.credit),
+                maxColAmount: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n)),
+                price: makePrice(7_350_000n),
+            },
+            currentPriceLevel: makePrice(7_065_000n),
+            worstDesiredPrice: makePrice(7_350_000n),
+            externalPrice: makePrice(7_850_000n),
+        },
+    });
+
+    // Trigger maybePlaceBid again for the same clock step
+    notify(StateManagerKeys.BOOK_STATE, { currentPriceLevel: makePrice(7_065_000n) });
+    const bidLogTwo = arbitrageManager.getBidLog();
+    const [_, existingBid] = await Promise.all(bidLogTwo);
+    t.deepEqual(existingBid, {
+        msg: 'Already existing bid. Either pending or success',
+        data: {
+            currentBid: {
+                offerId: 'place-bid-0',
+                state: 'pending'
+            },
+        },
+    });
+
+    const offerUpdateError = harden({
+        updated: 'offerStatus',
+        status: {
+            id: 'place-bid-0',
+            numWantsSatisfied: 0,
+            error: 'Error withdrawal ... purse only contained...',
+        },
+    });
+    notify(StateManagerKeys.WALLET_UPDATE, offerUpdateError);
+    await new Promise(res => setTimeout(res, 600));
+
+    const bidLogThree = arbitrageManager.getBidLog();
+    console.log(bidLogThree)
+    const [,, retryBid] = await Promise.all(bidLogThree);
+
+    t.deepEqual(retryBid, {
+        msg: 'Bid Placed',
+        data: {
+            offerId: 'place-bid-1',
+            bidUtils: {
+                bidAmount: moola.make(config.credit),
+                maxColAmount: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n)),
+                price: makePrice(7_350_000n),
+            },
+            currentPriceLevel: makePrice(7_065_000n),
+            worstDesiredPrice: makePrice(7_350_000n),
+            externalPrice: makePrice(7_850_000n),
+        },
+    });
 });
