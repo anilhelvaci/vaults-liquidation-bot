@@ -178,8 +178,21 @@ const makeMockExternalManager = (bidBrand, colBrand) => {
         return shouldSuccess ? Promise.resolve(mockPrice) : Promise.reject(new Error('MockReject'));
     };
 
+    const sell = async sellUtils => {
+        console.log('Sell called with: ', sellUtils);
+
+        return harden({
+            msg: 'Sold',
+            data: {
+                txHash: '0x01234',
+                sellUtils,
+            }
+        })
+    };
+
     return harden({
         fetchExternalPrice,
+        sell,
         setShouldSuccess: result => shouldSuccess = result,
     });
 };

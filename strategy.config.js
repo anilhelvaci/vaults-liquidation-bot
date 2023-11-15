@@ -18,7 +18,8 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
-        retryInterval: 30 * 1000 // 30 seconds in ms
+        retryInterval: 30 * 1000, // 30 seconds in ms
+        maxSellValue: 1000_000_000n // Can sell 1k ATOM max to avoid big price impacts on Osmosis
     },
     {
         delta: {
@@ -32,7 +33,8 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
-        retryInterval: 30 * 1000 // 30 seconds in ms
+        retryInterval: 30 * 1000, // 30 seconds in ms
+        maxSellValue: 1000_000_000n // Can sell 1k ATOM max to avoid big price impacts on Osmosis
     },
     {
         delta: {
@@ -45,7 +47,8 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
-        retryInterval: 30 * 1000 // 30 seconds in ms
+        retryInterval: 30 * 1000, // 30 seconds in ms
+        maxSellValue: 1000_000_000n // Can sell 1k ATOM max to avoid big price impacts on Osmosis
     },
     {
         delta: {
@@ -59,6 +62,7 @@ export default [
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',
         bookId: 0,
-        retryInterval: 30 * 1000 // 30 seconds in ms
+        retryInterval: 30 * 1000, // 30 seconds in ms
+        maxSellValue: 1000_000_000n // Can sell 1k ATOM max to avoid big price impacts on Osmosis
     },
 ];

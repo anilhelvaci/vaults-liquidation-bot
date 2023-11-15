@@ -1,4 +1,4 @@
-import { calculateDPExactDelta, calculateDPPercentageDelta, calculateBidUtils } from './helpers.js';
+import { calculateDPExactDelta, calculateDPPercentageDelta, calculateBidUtils, calculateSellUtils } from './helpers.js';
 import { MILI_SEC, RETRY_LIMIT, StateManagerKeys } from './constants.js';
 import { mustMatch } from '@endo/patterns';
 import { DELTA_SHAPE } from './typeGuards.js';
@@ -15,6 +15,7 @@ import { makeScalarBigMapStore } from '@agoric/vat-data';
  */
 const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbConfig) => {
     const bidLog = [];
+    const externalLog = [];
     const bidHistory = makeScalarBigMapStore('Bid History');
 
     let retryCount = 0;
@@ -172,6 +173,20 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
         bidHistory.set(currentPriceLevel.numerator.value, updatedData);
 
         if (updatedData.state === 'error') registerRetry();
+        if (updatedData.state === 'success') triggerExternalSale(offerData);
+    };
+
+    /**
+     * - Put external sale promise into externalLog
+     * - Check if collateral in the payouts is greater than the price impact threshold
+     *   - If it is not, sell the amount of collateral specified in payouts
+     *   - If it is, sell the threshold amount
+     */
+    const triggerExternalSale = (offerData) => {
+        const stateSnapshot = getAuctionState();
+        const sellUtils = calculateSellUtils(stateSnapshot, offerData, arbConfig);
+        const externalP = externalManager.sell(sellUtils);
+        externalLog.push(externalP);
     };
 
     const registerRetry = () => {
@@ -197,6 +212,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
     return harden({
         onStateUpdate,
         getBidLog: () => harden([...bidLog]),
+        getExternalLog: () => harden([...externalLog]),
     });
 };
 harden(makeArbitrageManager);

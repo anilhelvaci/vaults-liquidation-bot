@@ -91,6 +91,24 @@ const calculateBidUtils = (stateSnapShot, worstDesiredPrice, config) => {
 };
 harden(calculateBidUtils);
 
+/**
+ * @param stateSnapShot
+ * @param offerData
+ * @param config
+ */
+const calculateSellUtils = (stateSnapShot, offerData, config) => {
+    const collateralBrand = stateSnapShot[StateManagerKeys.COLLATERAL_BRAND];
+    const { payouts: { Collateral: boughtAmount }} = offerData;
+    const boughtValue = AmountMath.getValue(collateralBrand, boughtAmount);
+
+    if (boughtValue >= config.maxSellValue) {
+        return harden({ amountIn: AmountMath.make(collateralBrand, config.maxSellValue), ...offerData });
+    }
+
+    return harden({ amountIn: boughtAmount, ...offerData });
+};
+harden(calculateSellUtils);
+
 const setBookState = (notify, data) => {
     const { currentPriceLevel } = data;
     const quantizedPrice = currentPriceLevel ? quantize(currentPriceLevel, 1_000_000n) : currentPriceLevel;
@@ -149,4 +167,5 @@ export {
     calculateBidUtils,
     setBookState,
     makeCreditManager,
+    calculateSellUtils,
 };

@@ -10,7 +10,6 @@ import {
     floorDivideBy,
     makeRatioFromAmounts,
 } from '@agoric/zoe/src/contractSupport/index.js';
-import bin from '../../_agstate/yarn-links/@agoric/xsnap/moddable/modules/crypt/bin/bin.js';
 
 const makeMockBidManager = () => {
     let count = 0;
@@ -583,4 +582,34 @@ test('retry-mix', async t => {
         },
     });
     t.is(bidLogFour.length, 6);
+});
+
+/**
+ * - Place bid
+ * - Offer succeeds
+ * - Check externalLog with the sell info
+ */
+test('sell-on-success', async t => {
+    const { arbitrageManager, notify, makePrice, externalManager, config, moola } = t.context;
+
+    // initialize state
+    notify(StateManagerKeys.BOOK_STATE, { currentPriceLevel: makePrice(7_065_000n) });
+
+    const bidLogOne = arbitrageManager.getBidLog();
+    const [initial] = await Promise.all(bidLogOne);
+
+    t.deepEqual(initial, {
+        msg: 'Bid Placed',
+        data: {
+            offerId: 'place-bid-0',
+            bidUtils: {
+                bidAmount: moola.make(config.credit),
+                maxColAmount: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n)),
+                price: makePrice(7_350_000n),
+            },
+            currentPriceLevel: makePrice(7_065_000n),
+            worstDesiredPrice: makePrice(7_350_000n),
+            externalPrice: makePrice(7_850_000n),
+        },
+    });
 });
