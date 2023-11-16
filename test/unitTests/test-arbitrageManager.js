@@ -590,7 +590,7 @@ test('retry-mix', async t => {
  * - Check externalLog with the sell info
  */
 test('sell-on-success', async t => {
-    const { arbitrageManager, notify, makePrice, externalManager, config, moola } = t.context;
+    const { arbitrageManager, notify, makePrice, config, moola } = t.context;
 
     // initialize state
     notify(StateManagerKeys.BOOK_STATE, { currentPriceLevel: makePrice(7_065_000n) });
@@ -612,4 +612,33 @@ test('sell-on-success', async t => {
             externalPrice: makePrice(7_850_000n),
         },
     });
+
+    // Send successful offer update
+    const offerUpdateSuccess = harden({
+        updated: 'offerStatus',
+        status: {
+            id: 'place-bid-0',
+            numWantsSatisfied: 1,
+            payouts: {
+                Collateral: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n))
+            }
+        },
+    });
+    notify(StateManagerKeys.WALLET_UPDATE, offerUpdateSuccess);
+
+    const externalLog = arbitrageManager.getExternalLog();
+    const [sellCollateral] = await Promise.all(externalLog);
+
+    t.deepEqual(sellCollateral, {
+        msg: 'Sold',
+        data: {
+            txHash: '0x01234',
+            sellUtils: {
+                amountIn: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n)),
+                ...offerUpdateSuccess,
+            },
+        }
+    });
+
+    t.is(externalLog.length, 1);
 });
