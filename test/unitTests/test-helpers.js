@@ -2,8 +2,7 @@ import { test } from '@agoric/zoe/tools/prepare-test-env-ava.js';
 import { calculateBidUtils, calculateDPExactDelta, getConfig } from '../../src/helpers.js';
 import { makeIssuerKit } from '@agoric/ertp';
 import { makeRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
-import util from 'util';
-import { AmountMath } from '../../_agstate/yarn-links/@agoric/ertp/src/amountMath.js';
+import { AmountMath } from '@agoric/ertp';
 
 test.before(t => {
     const bidKit = makeIssuerKit('Bid');
@@ -39,13 +38,21 @@ test('desired-price-calculations-exact', t => {
 test('bid-utils', t => {
     const { bidKit, collateralKit } = t.context;
     const config = getConfig();
-    const worstDesiredPrice = makeRatio(5_000_000n, bidKit.brand, 1_000_000n, collateralKit.brand);
+    const worstDesiredPrice = makeRatio(7_350_000n, bidKit.brand, 1_000_000n, collateralKit.brand);
+    const currentPrice = makeRatio(7_065_000n, bidKit.brand, 1_000_000n, collateralKit.brand);
 
-    const utils = calculateBidUtils({ bidBrand: bidKit.brand }, worstDesiredPrice, harden(config));
+    const stateSnapshot = {
+        bidBrand: bidKit.brand,
+        bookState: {
+            currentPriceLevel: currentPrice,
+        }
+    }
+
+    const utils = calculateBidUtils(stateSnapshot, worstDesiredPrice, harden(config));
 
     t.deepEqual(utils, {
         bidAmount: AmountMath.make(bidKit.brand, 100_000_000n),
-        maxColAmount: AmountMath.make(collateralKit.brand, 20_000_000n),
+        maxColAmount: AmountMath.make(collateralKit.brand, 14154281n,),
         price: worstDesiredPrice,
     });
 });

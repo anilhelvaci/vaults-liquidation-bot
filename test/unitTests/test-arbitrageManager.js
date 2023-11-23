@@ -25,7 +25,7 @@ const makeMockBidManager = () => {
     });
 };
 
-test.before(t => {
+test.beforeEach(t => {
     const moola = withAmountUtils(makeIssuerKit('moola'));
     const simolean = withAmountUtils(makeIssuerKit('simolean'));
 
@@ -59,7 +59,7 @@ test.before(t => {
     });
 });
 
-test('initial', t => {
+test.serial('initial', t => {
     const { arbitrageManager } = t.context;
     t.log(arbitrageManager);
     t.pass();
@@ -75,7 +75,7 @@ test('initial', t => {
  * - Placed bid +
  * - No bid +
  */
-test('sequential', async t => {
+test.serial('sequential', async t => {
     const { arbitrageManager, notify, stateManager, makePrice, moola, config } = t.context;
 
     // State is not initialized until a non-null state update is received  by stateManager
@@ -166,7 +166,7 @@ test('sequential', async t => {
  * - If we get a success response within three retries we go on with the logic
  * - If not we wait for the next clock step
  */
-test('retry-on-price-fetch-error', async t => {
+test.serial('retry-on-price-fetch-error', async t => {
     const { arbitrageManager, notify, makePrice, externalManager } = t.context;
 
     externalManager.setShouldSuccess(false); // Make sure external manager throws
@@ -235,7 +235,7 @@ test('retry-on-price-fetch-error', async t => {
  * - Bid result with an offer error on zoe
  * - Should register a retry
  */
-test('retry-on-offer-error', async t => {
+test.serial('retry-on-offer-error', async t => {
     const { arbitrageManager, notify, makePrice, config, moola } = t.context;
 
     // initialize state
@@ -458,7 +458,7 @@ test('retry-on-offer-error', async t => {
  * - Placed bid fails no retries are registered
  * - Clock moved to the next step and bid is placed
  */
-test('retry-mix', async t => {
+test.serial('retry-mix', async t => {
     const { arbitrageManager, notify, makePrice, externalManager, config, moola } = t.context;
 
     externalManager.setShouldSuccess(false); // Make sure external manager throws
@@ -589,7 +589,7 @@ test('retry-mix', async t => {
  * - Offer succeeds
  * - Check externalLog with the sell info
  */
-test('sell-on-success', async t => {
+test.serial('sell-on-success', async t => {
     const { arbitrageManager, notify, makePrice, config, moola } = t.context;
 
     // initialize state

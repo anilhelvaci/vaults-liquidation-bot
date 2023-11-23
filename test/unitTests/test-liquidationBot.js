@@ -190,5 +190,10 @@ test.serial('arb-manager-cannot-fetch-external', async t => {
     });
 
     const bidLog = arbitrageManager.getBidLog();
-    await Promise.all([...bidLog].map(bid => t.throwsAsync(bid)));
+    (await Promise.all([...bidLog])).map(bid =>
+        t.deepEqual(bid, {
+            msg: 'Error when fetching market price',
+            data: new Error('MockReject'),
+        }),
+    );
 });
