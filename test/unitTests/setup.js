@@ -25,8 +25,6 @@ import {
 } from '@agoric/internal/src/utils.js';
 
 import bundleContractGovernor from '@agoric/governance/bundles/bundle-contractGovernor.js';
-import bundleAssetReserve from '@agoric/boot/bundles/vaults/bundle-assetReserve.js';
-import bundleAuctioneer from '@agoric/boot/bundles/vaults/bundle-auctioneer.js';
 import { unsafeMakeBundleCache } from '@agoric/swingset-vat/tools/bundleTool.js';
 import { resolve as importMetaResolve } from 'import-meta-resolve';
 import { eventLoopIteration } from '@agoric/notifier/tools/testSupports.js';
@@ -70,10 +68,11 @@ export const makeTestContext = async () => {
 };
 
 const setUpInstallations = async zoe => {
-    const [autoRefundPath, walletFactoryPath, auctioneerPath] = await Promise.all([
+    const [autoRefundPath, walletFactoryPath, auctioneerPath, reservePath] = await Promise.all([
         getPath('@agoric/zoe/src/contracts/automaticRefund.js'),
         getPath('@agoric/smart-wallet/src/walletFactory.js'),
         getPath('@agoric/inter-protocol/src/auction/auctioneer.js'),
+        getPath('@agoric/inter-protocol/src/reserve/assetReserve.js'),
     ]);
     const bundleCache = await unsafeMakeBundleCache('./bundles/');
 
@@ -81,7 +80,7 @@ const setUpInstallations = async zoe => {
         autoRefund: bundleCache.load(autoRefundPath, 'AutoRefund'),
         walletFactory: bundleCache.load(walletFactoryPath, 'WalletFactory'),
         auctioneer: bundleCache.load(auctioneerPath, 'Auctioneer'),
-        reserve: bundleAssetReserve,
+        reserve: bundleCache.load(reservePath, 'AssetReserve'),
         governor: bundleContractGovernor,
     });
     /** @type {AuctionTestInstallations} */
