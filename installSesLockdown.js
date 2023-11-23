@@ -5,8 +5,9 @@ import '@endo/eventual-send/shim.js'; // adds support needed by E
 
 lockdown({
     errorTaming: 'unsafe',
-    overrideTaming: 'severe',
+    overrideTaming: 'moderate',
     consoleTaming: 'unsafe',
+    domainTaming: 'unsafe'
 });
 
 Error.stackTraceLimit = Infinity;
