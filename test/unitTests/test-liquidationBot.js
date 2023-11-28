@@ -10,6 +10,7 @@ import { makeBidManager } from '../../src/bidManager.js';
 import { headValue } from '@agoric/smart-wallet/test/supports.js';
 import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { E } from '@endo/far';
+import fs from 'fs';
 
 const BIDDER_ADDRESS = 'agoricBidder';
 const BASE_POINTS = 10_000n;
@@ -84,6 +85,41 @@ test.serial('placed-bid-throws', async t => {
     });
     await t.throwsAsync(Promise.all(states));
 });
+
+test.only('placed-bid-cancel', async t => {
+    // Test Scenario for Canceling Bids
+
+    // Start auction
+    // Make sure collateral is deposited in the auction
+    // Alice makes a bid for a future price(at least %5 off the currentPriceLevel)
+    // This makes sure the bid is not settled immediately
+    // Alice then decides to cancel her bid
+    // Advance the clock to the time where Alice's bid were to be settled, if not have been canceled
+    // See that there's no change in the collateralAvailable
+
+    const suite = makeTestSuite(t.context);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS, startPriceVal: 1_100_000n });
+    const schedules = await suite.getAuctionSchedules();
+
+    await suite.advanceTo(170n); // Start next auction
+
+    const { bidManager } = makeMockArbitrager(suite, utils);
+
+    const { offerId, states } = bidManager.placeBid({
+        bidAmount: suite.makeBid(350n),
+        maxColAmount: suite.makeCollateral(300n),
+        price: makeRatioFromAmounts(suite.makeBid(300n), suite.makeCollateral(300n)),
+    });
+    // await Promise.all(states);
+
+    // Alice then decides to cancel her bid
+    await bidManager.cancelBid(offerId);
+    logToFile("success");
+});
+
+function logToFile(data) {
+    fs.appendFileSync('test.txt', data + '\n');
+}
 
 test.serial('arb-manager', async t => {
     const suite = makeTestSuite(t.context);

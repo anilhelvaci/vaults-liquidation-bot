@@ -17,8 +17,13 @@ const makeSmartWalletOfferSender = (
         await eventLoopCallback();
     };
 
+    const cancel = async offerId => {
+        await E(offersFacet).tryExitOffer(offerId);
+        await eventLoopCallback();
+    }
+
     return harden({
-        send,
+        send, cancel
     });
 };
 harden(makeSmartWalletOfferSender);
