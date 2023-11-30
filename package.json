@@ -21,8 +21,13 @@
     "@agoric/zoe": "^0.26.3-u11wf.0",
     "@agoric/smart-wallet": "^0.5.4-u11wf.0",
     "@agoric/rpc": "0.6.0",
+    "@agoric/internal": "0.4.0-u12.0",
+    "@agoric/ertp": "0.16.3-u12.0",
+    "@agoric/inter-protocol": "0.16.2-u12.0",
     "@endo/promise-kit": "^0.2.60",
     "@endo/patterns": "^0.2.6",
+    "@endo/marshal": "0.8.9",
+    "@endo/far": "0.2.22",
     "ava": "^5.3.0",
     "prettier": "^3.0.3",
     "tsx": "^3.12.8"
