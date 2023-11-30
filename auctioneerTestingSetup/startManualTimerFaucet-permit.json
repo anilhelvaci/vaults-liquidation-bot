@@ -1,0 +1,27 @@
+{
+  "consume": {
+    "zoe": "zoe",
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "manualTimerFaucetKit": true
+  },
+  "installation": {
+    "consume": {
+      "manualTimerFaucetInstallation": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "instance": {
+    "produce": {
+      "manualTimerFaucetInstance": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}

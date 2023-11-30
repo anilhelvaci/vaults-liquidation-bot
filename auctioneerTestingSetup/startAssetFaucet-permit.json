@@ -1,0 +1,29 @@
+{
+  "consume": {
+    "zoe": "zoe",
+    "board": true,
+    "chainStorage": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "assetFaucetKit": true
+  },
+  "instance": {
+    "produce": {
+      "assetFaucetInstance": true
+    }
+  },
+  "installation": {
+    "consume": {
+      "assetFaucetInstallation": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}

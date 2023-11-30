@@ -1,0 +1,41 @@
+{
+  "consume": {
+    "zoe": "zoe",
+    "board": true,
+    "priceAuthority": true,
+    "chainStorage": true,
+    "economicCommitteeCreatorFacet": true,
+    "manualTimerFaucetKit": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "fakeAuctioneerKit": true
+  },
+  "instance": {
+    "consume": {
+      "reserve": true
+    },
+    "produce": {
+      "fakeAuctioneer": true
+    }
+  },
+  "installation": {
+    "consume": {
+      "fakeAuctioneer": true,
+      "contractGovernor": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "issuer": {
+    "consume": {
+      "IST": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
