@@ -35,8 +35,8 @@ const makeBidManager = (offerSender = makeTransactionSender()) => {
         return harden({ offerId: offerSpec.id, states: [sendP] });
     };
 
-    const cancelBid = async (offerId) => {
-        await offerSender.cancel(offerId);
+    const cancelBid = (offerId) => {
+        return offerSender.cancel(offerId);
     };
 
     return harden({
