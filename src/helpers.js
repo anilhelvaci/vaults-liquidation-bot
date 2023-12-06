@@ -58,7 +58,20 @@ harden(calculateDPExactDelta);
  * @param state
  * @param externalPrice
  */
-const calculateDPPercentageDelta = (delta, state, externalPrice) => {};
+const calculateDPPercentageDelta = (delta, state, externalPrice) => {
+    const { bidBrand } = state;
+    assertIsRatio(externalPrice);
+
+    const verifiedNumerator = AmountMath.coerce(bidBrand, externalPrice.numerator);
+    const deltaAmount = AmountMath.make(bidBrand,
+        natSafeMath.multiply(
+            natSafeMath.floorDivide(verifiedNumerator.value, 100n), delta.value
+        )
+    );
+    const newNumerator = AmountMath.subtract(verifiedNumerator, deltaAmount);
+
+    return makeRatioFromAmounts(newNumerator, externalPrice.denominator);
+};
 harden(calculateDPPercentageDelta);
 
 /**
