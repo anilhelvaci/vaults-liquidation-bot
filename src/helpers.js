@@ -98,7 +98,11 @@ harden(calculateBidUtils);
  */
 const calculateSellUtils = (stateSnapShot, offerData, config) => {
     const collateralBrand = stateSnapShot[StateManagerKeys.COLLATERAL_BRAND];
-    const { payouts: { Collateral: boughtAmount }} = offerData;
+    const {
+        status: {
+            payouts: { Collateral: boughtAmount },
+        },
+    } = offerData;
     const boughtValue = AmountMath.getValue(collateralBrand, boughtAmount);
 
     if (boughtValue >= config.maxSellValue) {

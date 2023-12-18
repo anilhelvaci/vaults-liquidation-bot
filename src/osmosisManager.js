@@ -1,16 +1,16 @@
+/**
+ * Responsible for handling operations related to Osmosis
+ */
 const makeOsmosisManager = () => {
-    const checkCollateralPrice = () => {
+    const fetchExternalPrice = () => {
         return Promise.resolve(7n);
     };
 
-    const sendCollateralToOsmosis = () => {};
-
-    const sellCollateralOnOsmosis = () => {};
+    const sell = () => {};
 
     return harden({
-        checkCollateralPrice,
-        sendCollateralToOsmosis,
-        sellCollateralOnOsmosis,
+        fetchExternalPrice,
+        sell,
     });
 };
 harden(makeOsmosisManager);
