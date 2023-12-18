@@ -294,7 +294,7 @@ test.serial('arb-manager-percentage-strategy', async t => {
     await suite.advanceTo(180n);
     const clockUpdateTwo = await E(subs.bookSub).getUpdateSince();
     t.deepEqual(clockUpdateTwo.value, {
-        collateralAvailable: suite.makeCollateral(50_000_000n - 13_409_319n),
+        collateralAvailable: suite.makeCollateral(50_000_000n),
         currentPriceLevel: makeRatioFromAmounts(
             suite.makeBid(7_457_500n * BASE_POINTS),
             suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
@@ -309,7 +309,125 @@ test.serial('arb-manager-percentage-strategy', async t => {
     await suite.advanceTo(185n);
     const clockUpdateThree = await E(subs.bookSub).getUpdateSince();
     t.deepEqual(clockUpdateThree.value, {
-        collateralAvailable: suite.makeCollateral(50_000_000n - 13_409_319n),
+        collateralAvailable: suite.makeCollateral(50_000_000n - 14_154_281n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(7_065_000n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+        proceedsRaised: undefined,
+        remainingProceedsGoal: null,
+        startCollateral: suite.makeCollateral(50_000_000n),
+        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
+        startProceedsGoal: null,
+    });
+});
+
+test.serial('arb-manager-controlled-spend', async t => {
+    const suite = makeTestSuite(t.context);
+    const denomAmount = suite.makeCollateral(DENOM_VALUE);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS });
+    const schedules = await suite.getAuctionSchedules();
+
+    // Current time 140n, current auction ends at 160n, start delay is 10n
+    t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
+    await suite.advanceTo(170n); // Start next auction
+
+    const { startArbing, subs } = makeMockArbitrager(suite, utils, 1);
+    startArbing();
+
+    await suite.advanceTo(175n);
+    const clockUpdateOne = await E(subs.bookSub).getUpdateSince();
+    t.deepEqual(clockUpdateOne.value, {
+        collateralAvailable: suite.makeCollateral(50_000_000n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(7_850_000n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+        proceedsRaised: undefined,
+        remainingProceedsGoal: null,
+        startCollateral: suite.makeCollateral(50_000_000n),
+        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
+        startProceedsGoal: null,
+    });
+
+    await suite.advanceTo(180n);
+    const clockUpdateTwo = await E(subs.bookSub).getUpdateSince();
+    t.deepEqual(clockUpdateTwo.value, {
+        collateralAvailable: suite.makeCollateral(50_000_000n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(7_457_500n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+        proceedsRaised: undefined,
+        remainingProceedsGoal: null,
+        startCollateral: suite.makeCollateral(50_000_000n),
+        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
+        startProceedsGoal: null,
+    });
+
+    await suite.advanceTo(185n);
+    const clockUpdateThree = await E(subs.bookSub).getUpdateSince();
+    t.deepEqual(clockUpdateThree.value, {
+        collateralAvailable: suite.makeCollateral(50_000_000n - 1_415_428n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(7_065_000n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+        proceedsRaised: undefined,
+        remainingProceedsGoal: null,
+        startCollateral: suite.makeCollateral(50_000_000n),
+        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
+        startProceedsGoal: null,
+    });
+});
+
+test.serial('arb-manager-controlled-spend-percentage', async t => {
+    const suite = makeTestSuite(t.context);
+    const denomAmount = suite.makeCollateral(DENOM_VALUE);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS });
+    const schedules = await suite.getAuctionSchedules();
+
+    // Current time 140n, current auction ends at 160n, start delay is 10n
+    t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
+    await suite.advanceTo(170n); // Start next auction
+
+    const { startArbing, subs } = makeMockArbitrager(suite, utils, 3);
+    startArbing();
+
+    await suite.advanceTo(175n);
+    const clockUpdateOne = await E(subs.bookSub).getUpdateSince();
+    t.deepEqual(clockUpdateOne.value, {
+        collateralAvailable: suite.makeCollateral(50_000_000n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(7_850_000n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+        proceedsRaised: undefined,
+        remainingProceedsGoal: null,
+        startCollateral: suite.makeCollateral(50_000_000n),
+        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
+        startProceedsGoal: null,
+    });
+
+    await suite.advanceTo(180n);
+    const clockUpdateTwo = await E(subs.bookSub).getUpdateSince();
+    t.deepEqual(clockUpdateTwo.value, {
+        collateralAvailable: suite.makeCollateral(50_000_000n - 1_340_931n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(7_457_500n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+        proceedsRaised: undefined,
+        remainingProceedsGoal: null,
+        startCollateral: suite.makeCollateral(50_000_000n),
+        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
+        startProceedsGoal: null,
+    });
+
+    await suite.advanceTo(185n);
+    const clockUpdateThree = await E(subs.bookSub).getUpdateSince();
+    t.deepEqual(clockUpdateThree.value, {
+        collateralAvailable: suite.makeCollateral(50_000_000n - 2_756_359n),
         currentPriceLevel: makeRatioFromAmounts(
             suite.makeBid(7_065_000n * BASE_POINTS),
             suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
