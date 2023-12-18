@@ -39,7 +39,7 @@ export default [
     {
         delta: {
             type: 'percentage',
-            value: 5n, // 5% off from the external price
+            value: 6n, // 5% off from the external price
         },
         spend: {
             type: 'flash',
