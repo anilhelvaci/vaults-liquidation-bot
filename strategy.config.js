@@ -24,11 +24,11 @@ export default [
     {
         delta: {
             type: 'exact',
-            value: 500000n, // 0.5 IST
+            value: 300000n, // 0.3 IST
         },
         spend: {
             type: 'controlled',
-            controlFactor: 10n, // amountIn = credit / controlFactor
+            controlFactor: 4n, // amountIn = credit / controlFactor
         },
         credit: 100_000_000n, // 100 IST credit
         collateralName: 'ATOM',

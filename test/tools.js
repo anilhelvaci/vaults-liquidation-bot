@@ -211,6 +211,7 @@ const makeMockArbitrager = (suite, utils, configIndex) => {
     return harden({
         startArbing: () => arbWatcher.watch(notify),
         arbitrageManager,
+        stateManager,
         externalManager,
         bidManager,
         subs,

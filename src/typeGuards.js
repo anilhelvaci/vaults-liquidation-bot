@@ -5,6 +5,14 @@ export const DELTA_SHAPE = harden({
     value: M.nat(),
 });
 
-export const SPEND_TYPE_SHAPE = harden({
-    type: M.or('flash', 'controlled'),
-});
+export const SPEND_TYPE_SHAPE = harden(
+    M.or(
+        {
+            type: 'flash',
+        },
+        {
+            type: 'controlled',
+            controlFactor: M.nat(),
+        },
+    ),
+);
