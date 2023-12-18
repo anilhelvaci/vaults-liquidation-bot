@@ -35,7 +35,7 @@ const makeBidManager = (offerSender = makeTransactionSender()) => {
         return harden({ offerId: offerSpec.id, states: [sendP] });
     };
 
-    const cancelBid = (offerId) => {
+    const cancelBid = offerId => {
         return offerSender.cancel(offerId);
     };
 

@@ -6,10 +6,7 @@ import { makeAuctionStateManager } from '../../src/auctionState.js';
 import { withAmountUtils } from '@agoric/smart-wallet/test/supports.js';
 import { makeIssuerKit } from '@agoric/ertp';
 import { MILI_SEC, StateManagerKeys } from '../../src/constants.js';
-import {
-    floorDivideBy,
-    makeRatioFromAmounts,
-} from '@agoric/zoe/src/contractSupport/index.js';
+import { floorDivideBy, makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/index.js';
 
 const makeMockBidManager = () => {
     let count = 0;
@@ -19,7 +16,7 @@ const makeMockBidManager = () => {
         count += 1;
         return harden({ offerId });
     };
-    
+
     return harden({
         placeBid,
     });
@@ -34,7 +31,7 @@ test.beforeEach(t => {
     };
 
     const rawConfig = getConfig();
-    const config =  { ...rawConfig, retryInterval: 500 }; // Override config to retry on every .5 seconds
+    const config = { ...rawConfig, retryInterval: 500 }; // Override config to retry on every .5 seconds
     const stateManager = makeAuctionStateManager(config);
     const externalManager = makeMockExternalManager(moola.brand, simolean.brand);
     const bidManager = makeMockBidManager();
@@ -94,7 +91,7 @@ test.serial('sequential', async t => {
             ...stateManager.getState(),
             worstDesiredPrice: makePrice(7_350_000n),
             externalPrice: makePrice(7_850_000n),
-        }
+        },
     });
 
     // Move the price so delta is satisfied
@@ -113,7 +110,7 @@ test.serial('sequential', async t => {
             currentPriceLevel: makePrice(7_065_000n),
             worstDesiredPrice: makePrice(7_350_000n),
             externalPrice: makePrice(7_850_000n),
-        }
+        },
     });
 
     // Someone else makes a bid, and we get notified, but we shouldn't bid because there's already a pending bid
@@ -121,25 +118,28 @@ test.serial('sequential', async t => {
     const pendingBidLog = arbitrageManager.getBidLog();
     const pendingBid = await pendingBidLog[3];
     t.deepEqual(pendingBid, {
-        msg:'Already existing bid. Either pending or success',
+        msg: 'Already existing bid. Either pending or success',
         data: {
             currentBid: {
                 offerId: 'place-bid-0',
-                state: 'pending'
-            }
-        }
+                state: 'pending',
+            },
+        },
     });
 
     // Send a wallet update to decrease credit
-    notify(StateManagerKeys.WALLET_UPDATE, harden({
-        updated: 'offerStatus',
-        status: {
-            id: 'place-bid-0',
-            proposal: { give: { Bid: moola.make(100_000_000n) } }, // Flash bid
-            numWantsSatisfied: 1,
-            result: 'Your bid has been accepted',
-        },
-    }));
+    notify(
+        StateManagerKeys.WALLET_UPDATE,
+        harden({
+            updated: 'offerStatus',
+            status: {
+                id: 'place-bid-0',
+                proposal: { give: { Bid: moola.make(100_000_000n) } }, // Flash bid
+                numWantsSatisfied: 1,
+                result: 'Your bid has been accepted',
+            },
+        }),
+    );
 
     // Now trigger maybePlaceBid again
     notify(StateManagerKeys.BOOK_STATE, { currentPriceLevel: makePrice(7_065_000n) });
@@ -155,7 +155,7 @@ test.serial('sequential', async t => {
             },
             credit: moola.makeEmpty(),
         },
-    })
+    });
 });
 
 /**
@@ -186,22 +186,22 @@ test.serial('retry-on-price-fetch-error', async t => {
 
     t.deepEqual(initial, {
         msg: 'Error when fetching market price',
-        data: new Error('MockReject')
+        data: new Error('MockReject'),
     });
 
     t.deepEqual(firstTry, {
         msg: 'Error when fetching market price',
-        data: new Error('MockReject')
+        data: new Error('MockReject'),
     });
 
     t.deepEqual(secondTry, {
         msg: 'Error when fetching market price',
-        data: new Error('MockReject')
+        data: new Error('MockReject'),
     });
 
     t.deepEqual(thirdTry, {
         msg: 'Error when fetching market price',
-        data: new Error('MockReject')
+        data: new Error('MockReject'),
     });
 
     t.is(bidLog.length, 4);
@@ -211,7 +211,7 @@ test.serial('retry-on-price-fetch-error', async t => {
     const bidLogSameClockStep = arbitrageManager.getBidLog();
     t.deepEqual(await bidLogSameClockStep[4], {
         msg: 'Error when fetching market price',
-        data: new Error('MockReject')
+        data: new Error('MockReject'),
     });
     t.is(bidLogSameClockStep.length, 5);
 
@@ -223,7 +223,7 @@ test.serial('retry-on-price-fetch-error', async t => {
     (await Promise.all(bidLogNewClockStep)).slice(-4).forEach(tryData => {
         t.deepEqual(tryData, {
             msg: 'Error when fetching market price',
-            data: new Error('MockReject')
+            data: new Error('MockReject'),
         });
     });
 
@@ -515,7 +515,7 @@ test.serial('retry-mix', async t => {
     await new Promise(res => setTimeout(res, 600));
 
     const bidLogTwo = arbitrageManager.getBidLog();
-    const [,, secondRetry, thirdRetry] = await Promise.all(bidLogTwo);
+    const [, , secondRetry, thirdRetry] = await Promise.all(bidLogTwo);
 
     t.deepEqual(secondRetry, {
         msg: 'Error when fetching market price',
@@ -620,8 +620,8 @@ test.serial('sell-on-success', async t => {
             id: 'place-bid-0',
             numWantsSatisfied: 1,
             payouts: {
-                Collateral: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n))
-            }
+                Collateral: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n)),
+            },
         },
     });
     notify(StateManagerKeys.WALLET_UPDATE, offerUpdateSuccess);
@@ -637,7 +637,7 @@ test.serial('sell-on-success', async t => {
                 amountIn: floorDivideBy(moola.make(config.credit), makePrice(7_065_000n)),
                 ...offerUpdateSuccess,
             },
-        }
+        },
     });
 
     t.is(externalLog.length, 1);

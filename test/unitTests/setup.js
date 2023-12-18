@@ -1,28 +1,14 @@
 import { E, Far } from '@endo/far';
 import buildManualTimer from '@agoric/zoe/tools/manualTimer.js';
-import {
-    installPuppetGovernance,
-    produceInstallations,
-    setupBootstrap,
-} from '@agoric/inter-protocol/test/supports.js';
+import { installPuppetGovernance, produceInstallations, setupBootstrap } from '@agoric/inter-protocol/test/supports.js';
 import { startEconomicCommittee } from '@agoric/inter-protocol/src/proposals/startEconCommittee.js';
-import {
-    setupReserve,
-    startAuctioneer,
-} from '@agoric/inter-protocol/src/proposals/econ-behaviors.js';
+import { setupReserve, startAuctioneer } from '@agoric/inter-protocol/src/proposals/econ-behaviors.js';
 import { makeScalarMapStore } from '@agoric/store/src/stores/scalarMapStore.js';
 import { providePriceAuthorityRegistry } from '@agoric/zoe/tools/priceAuthorityRegistry.js';
 import { setUpZoeForTest } from '@agoric/zoe/tools/setup-zoe.js';
-import {
-    makeMockTestSpace,
-    withAmountUtils,
-} from '@agoric/smart-wallet/test/supports.js';
+import { makeMockTestSpace, withAmountUtils } from '@agoric/smart-wallet/test/supports.js';
 import { makeIssuerKit } from '@agoric/ertp/src/issuerKit.js';
-import {
-    allValues,
-    deeplyFulfilledObject,
-    objectMap,
-} from '@agoric/internal/src/utils.js';
+import { allValues, deeplyFulfilledObject, objectMap } from '@agoric/internal/src/utils.js';
 
 import bundleContractGovernor from '@agoric/governance/bundles/bundle-contractGovernor.js';
 import { unsafeMakeBundleCache } from '@agoric/swingset-vat/tools/bundleTool.js';
@@ -51,8 +37,8 @@ const defaultParams = {
 export const makeTestContext = async () => {
     const { zoe, feeMintAccessP } = await setUpZoeForTest();
 
-    const bid = withAmountUtils(makeIssuerKit('Bid', 'nat', { decimalPlaces: 6}));
-    const collateral = withAmountUtils(makeIssuerKit('Collateral', 'nat', { decimalPlaces: 6}));
+    const bid = withAmountUtils(makeIssuerKit('Bid', 'nat', { decimalPlaces: 6 }));
+    const collateral = withAmountUtils(makeIssuerKit('Collateral', 'nat', { decimalPlaces: 6 }));
 
     const installs = await deeplyFulfilledObject(setUpInstallations(zoe));
     const feeMintAccess = await feeMintAccessP;
@@ -94,11 +80,7 @@ const getPath = async packageName => {
 };
 
 const setupServices = async (t, params = defaultParams) => {
-    const {
-        zoe,
-        electorateTerms = { committeeName: 'The Cabal', committeeSize: 1 },
-        collateral,
-    } = t.context;
+    const { zoe, electorateTerms = { committeeName: 'The Cabal', committeeSize: 1 }, collateral } = t.context;
 
     const timer = buildManualTimer();
     await timer.advanceTo(140n);
@@ -122,8 +104,7 @@ const setupServices = async (t, params = defaultParams) => {
     void E(reserveCF).addIssuer(collateral.issuer, 'Collateral');
 
     const paBaggage = makeScalarMapStore();
-    const { priceAuthority, adminFacet: registry } =
-        providePriceAuthorityRegistry(paBaggage);
+    const { priceAuthority, adminFacet: registry } = providePriceAuthorityRegistry(paBaggage);
     space.produce.priceAuthority.resolve(priceAuthority);
 
     const [walletFactoryDriver] = await Promise.all([
@@ -137,13 +118,12 @@ const startWalletFactory = async (t, { consume }) => {
     const { zoe, installs } = t.context;
     const bankManager = getBankManager(t);
 
-    const [storageNode, walletBridgeManager, assetPublisher, walletSpace] =
-        await Promise.all([
-            makeStorageNodeChild(consume.chainStorage, 'wallet'),
-            getBridgeManager(),
-            E(bankManager).getBankForAddress('anyAddress'),
-            makeMockTestSpace(console.log),
-        ]);
+    const [storageNode, walletBridgeManager, assetPublisher, walletSpace] = await Promise.all([
+        makeStorageNodeChild(consume.chainStorage, 'wallet'),
+        getBridgeManager(),
+        E(bankManager).getBankForAddress('anyAddress'),
+        makeMockTestSpace(console.log),
+    ]);
 
     await eventLoopIteration();
 
@@ -192,9 +172,11 @@ const makeWalletFactoryDriver = (t, walletFactoryKit, { consume }) => {
         // copied from makeClientBanks()
         const bank = E(bankManager).getBankForAddress(address);
 
-        const [wallet, _isNew] = await E(
-            walletFactoryKit.creatorFacet,
-        ).provideSmartWallet(address, bank, consume.namesByAddressAdmin);
+        const [wallet, _isNew] = await E(walletFactoryKit.creatorFacet).provideSmartWallet(
+            address,
+            bank,
+            consume.namesByAddressAdmin,
+        );
         return wallet;
     };
 
@@ -209,28 +191,18 @@ export const makeTestDriver = async (t, params = defaultParams) => {
     /** @type {MapStore<Brand, { setPrice: (r: Ratio) => void }>} */
     const priceAuthorities = makeScalarMapStore();
 
-    const { space, timer, registry, walletFactoryDriver } = await setupServices(
-        t,
-        params,
-    );
+    const { space, timer, registry, walletFactoryDriver } = await setupServices(t, params);
     // Each driver needs its own mockChainStorage to avoid state pollution between tests
-    const mockChainStorage =
-        /** @type {import('@agoric/internal/src/storage-test-utils.js').MockChainStorageRoot} */ (
-            await space.consume.chainStorage
-        );
+    const mockChainStorage = /** @type {import('@agoric/internal/src/storage-test-utils.js').MockChainStorageRoot} */ (
+        await space.consume.chainStorage
+    );
     const { auctioneerKit: auctioneerKitP } = space.consume;
     const auctioneerKit = await auctioneerKitP;
 
     const { publicFacet, creatorFacet } = auctioneerKit;
 
-    const depositCollateral = async (
-        collateralAmount,
-        issuerKit,
-        offerArgs,
-    ) => {
-        const collateralPayment = E(issuerKit.mint).mintPayment(
-            harden(collateralAmount),
-        );
+    const depositCollateral = async (collateralAmount, issuerKit, offerArgs) => {
+        const collateralPayment = E(issuerKit.mint).mintPayment(harden(collateralAmount));
         const seat = E(zoe).offer(
             E(publicFacet).makeDepositInvitation(),
             harden({
@@ -257,9 +229,8 @@ export const makeTestDriver = async (t, params = defaultParams) => {
         }
 
         /** @type {Promise<BookDataTracker>} */
-        const tracker = E.when(
-            E(publicFacet).getBookDataUpdates(brand),
-            subscription => subscriptionTracker(t, subscribeEach(subscription)),
+        const tracker = E.when(E(publicFacet).getBookDataUpdates(brand), subscription =>
+            subscriptionTracker(t, subscribeEach(subscription)),
         );
         // @ts-expect-error I don't know what it wants.
         bookDataTrackers.init(brand, tracker);
@@ -271,11 +242,7 @@ export const makeTestDriver = async (t, params = defaultParams) => {
      * @param {Amount<'nat'>} collateralAmount
      * @param {{ goal: Amount<'nat'> }} [limit]
      */
-    const setupCollateralAuction = async (
-        issuerKit,
-        collateralAmount,
-        limit,
-    ) => {
+    const setupCollateralAuction = async (issuerKit, collateralAmount, limit) => {
         const collateralBrand = collateralAmount.brand;
 
         const pa = makeManualPriceAuthority({
@@ -285,17 +252,9 @@ export const makeTestDriver = async (t, params = defaultParams) => {
             initialPrice: makeRatio(100n, bid.brand, 100n, collateralBrand),
         });
         priceAuthorities.init(collateralBrand, pa);
-        await registry.registerPriceAuthority(
-            pa,
-            collateralBrand,
-            bid.brand,
-            true,
-        );
+        await registry.registerPriceAuthority(pa, collateralBrand, bid.brand, true);
 
-        await E(creatorFacet).addBrand(
-            issuerKit.issuer,
-            collateralBrand.getAllegedName(),
-        );
+        await E(creatorFacet).addBrand(issuerKit.issuer, collateralBrand.getAllegedName());
 
         /** @type {BookDataTracker} */
         const tracker = await getBookDataTracker(collateralBrand);
@@ -326,17 +285,11 @@ export const makeTestDriver = async (t, params = defaultParams) => {
             },
             setGovernedParam: (name, newValue) => {
                 trace(t, 'setGovernedParam', name);
-                const auctionGov = NonNullish(
-                    t.context.puppetGovernors.auctioneer,
-                );
-                return E(auctionGov).changeParams(
-                    harden({ changes: { [name]: newValue } }),
-                );
+                const auctionGov = NonNullish(t.context.puppetGovernors.auctioneer);
+                return E(auctionGov).changeParams(harden({ changes: { [name]: newValue } }));
             },
             async updatePriceAuthority(newPrice) {
-                priceAuthorities
-                    .get(newPrice.denominator.brand)
-                    .setPrice(newPrice);
+                priceAuthorities.get(newPrice.denominator.brand).setPrice(newPrice);
                 await eventLoopIteration();
             },
             depositCollateral,
@@ -347,10 +300,8 @@ export const makeTestDriver = async (t, params = defaultParams) => {
                 return timer;
             },
             getScheduleTracker() {
-                return E.when(
-                    E(publicFacet).getScheduleUpdates(),
-                    subscription =>
-                        subscriptionTracker(t, subscribeEach(subscription)),
+                return E.when(E(publicFacet).getScheduleUpdates(), subscription =>
+                    subscriptionTracker(t, subscribeEach(subscription)),
                 );
             },
             getBookDataTracker,

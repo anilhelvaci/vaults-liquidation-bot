@@ -1,11 +1,7 @@
 // @ts-ignore
 import { test } from '@agoric/zoe/tools/prepare-test-env-ava.js';
 import { makeTestContext, makeTestDriver } from './setup.js';
-import {
-    makeMockArbitrager,
-    makeSmartWalletOfferSender,
-    makeTestSuite,
-} from '../tools.js';
+import { makeMockArbitrager, makeSmartWalletOfferSender, makeTestSuite } from '../tools.js';
 import { makeBidManager } from '../../src/bidManager.js';
 import { headValue } from '@agoric/smart-wallet/test/supports.js';
 import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
@@ -97,7 +93,8 @@ test.serial('placed-bid-settles-percentage-strategy', async t => {
                 Collateral: suite.makeCollateral(300n),
             },
         },
-    });});
+    });
+});
 
 test.serial('placed-bid-throws', async t => {
     const suite = makeTestSuite(t.context);
@@ -122,7 +119,11 @@ test.serial('placed-bid-throws', async t => {
 
 test.serial('placed-bid-cancel', async t => {
     const suite = makeTestSuite(t.context);
-    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS, startPriceVal: 1_100_000n, depositColValue: 10n });
+    const { utils } = await suite.initWorld({
+        bidderAddress: BIDDER_ADDRESS,
+        startPriceVal: 1_100_000n,
+        depositColValue: 10n,
+    });
 
     await suite.advanceTo(170n); // Start next auction
 
@@ -212,7 +213,7 @@ test.serial('arb-manager', async t => {
     });
 
     const walletState = await headValue(utils.updateSub);
-    console.log('WALLET_STATE: ', walletState)
+    console.log('WALLET_STATE: ', walletState);
     t.like(walletState, {
         updated: 'offerStatus',
         status: {

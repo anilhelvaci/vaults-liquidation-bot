@@ -63,10 +63,9 @@ const calculateDPPercentageDelta = (delta, state, externalPrice) => {
     assertIsRatio(externalPrice);
 
     const verifiedNumerator = AmountMath.coerce(bidBrand, externalPrice.numerator);
-    const deltaAmount = AmountMath.make(bidBrand,
-        natSafeMath.multiply(
-            natSafeMath.floorDivide(verifiedNumerator.value, 100n), delta.value
-        )
+    const deltaAmount = AmountMath.make(
+        bidBrand,
+        natSafeMath.multiply(natSafeMath.floorDivide(verifiedNumerator.value, 100n), delta.value),
     );
     const newNumerator = AmountMath.subtract(verifiedNumerator, deltaAmount);
 
@@ -99,7 +98,7 @@ const calculateBidUtils = (stateSnapShot, worstDesiredPrice, config) => {
     return harden({
         bidAmount,
         maxColAmount,
-        price: worstDesiredPrice
+        price: worstDesiredPrice,
     });
 };
 harden(calculateBidUtils);
@@ -131,7 +130,7 @@ const setBookState = (notify, data) => {
     const quantizedPrice = currentPriceLevel ? quantize(currentPriceLevel, 1_000_000n) : currentPriceLevel;
     const update = harden({
         ...data,
-        currentPriceLevel: quantizedPrice
+        currentPriceLevel: quantizedPrice,
     });
     notify(StateManagerKeys.BOOK_STATE, update);
 };
