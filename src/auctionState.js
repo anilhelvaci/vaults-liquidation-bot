@@ -1,5 +1,5 @@
 import { assert } from '@agoric/assert';
-import { StateManagerKeys } from "./constants.js";
+import { StateManagerKeys } from './constants.js';
 import { makeCreditManager } from './helpers.js';
 import { makeScalarBigMapStore } from '@agoric/vat-data';
 
@@ -73,19 +73,20 @@ const makeAuctionStateManager = arbConfig => {
             const { Bid: excessBidAmount } = status.payouts;
             if (!excessBidAmount) return;
             creditManager.incrementCredit(excessBidAmount);
-        }
-        else if (!status.payouts && status.numWantsSatisfied && status.numWantsSatisfied === 1) {
-            const { give: { Bid: paidBidAmount }} = status.proposal;
+        } else if (!status.payouts && status.numWantsSatisfied && status.numWantsSatisfied === 1) {
+            const {
+                give: { Bid: paidBidAmount },
+            } = status.proposal;
             creditManager.decrementCredit(paidBidAmount);
         }
-
     };
 
     const checkInitialized = () => {
-        return !!(state[StateManagerKeys.BID_BRAND] &&
+        return !!(
+            state[StateManagerKeys.BID_BRAND] &&
             state[StateManagerKeys.COLLATERAL_BRAND] &&
-            state[StateManagerKeys.CREDIT_MANAGER]);
-
+            state[StateManagerKeys.CREDIT_MANAGER]
+        );
     };
 
     const writeOffer = data => {
@@ -105,10 +106,12 @@ const makeAuctionStateManager = arbConfig => {
         const copyState = {
             ...state,
             initialized: checkInitialized(),
-            [StateManagerKeys.CREDIT_MANAGER]: checkInitialized() ? harden({
-                checkEnoughBalance: creditManager.checkEnoughBalance,
-                getCredit: creditManager.getCredit,
-            }) : {},
+            [StateManagerKeys.CREDIT_MANAGER]: checkInitialized()
+                ? harden({
+                      checkEnoughBalance: creditManager.checkEnoughBalance,
+                      getCredit: creditManager.getCredit,
+                  })
+                : {},
             offers: [...state[StateManagerKeys.WALLET_UPDATE].entries()],
         };
         return harden(copyState);
@@ -121,6 +124,4 @@ const makeAuctionStateManager = arbConfig => {
 };
 harden(makeAuctionStateManager);
 
-export {
-    makeAuctionStateManager
-};
+export { makeAuctionStateManager };

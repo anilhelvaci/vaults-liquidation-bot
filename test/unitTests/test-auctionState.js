@@ -84,7 +84,7 @@ test('handleWalletUpdate', t => {
                 numWantsSatisfied: 1,
                 result: 'Your bid has been accepted',
             },
-        }
+        },
     ]);
 
     const offerUpdateSuccessWithPayout = harden({
@@ -97,7 +97,7 @@ test('handleWalletUpdate', t => {
             payouts: {
                 Collateral: simoleans.make(35_000_000n),
                 Bid: moola.make(13n),
-            }
+            },
         },
     });
     updateState(StateManagerKeys.WALLET_UPDATE, offerUpdateSuccessWithPayout);
@@ -119,7 +119,7 @@ test('handleWalletUpdate', t => {
                 numWantsSatisfied: 1,
                 result: 'Your bid has been accepted',
             },
-        }
+        },
     ]);
 
     const offerUpdateErrorNoPayout = harden({
@@ -129,7 +129,7 @@ test('handleWalletUpdate', t => {
             proposal: { give: { Bid: moola.make(40_000_000n) } },
             numWantsSatisfied: 1,
             result: 'Your bid has been accepted',
-            error: 'Error withdrawal ... purse only contained...'
+            error: 'Error withdrawal ... purse only contained...',
         },
     });
     updateState(StateManagerKeys.WALLET_UPDATE, offerUpdateErrorNoPayout);
@@ -146,9 +146,9 @@ test('handleWalletUpdate', t => {
                 proposal: { give: { Bid: moola.make(40_000_000n) } },
                 numWantsSatisfied: 1,
                 result: 'Your bid has been accepted',
-                error: 'Error withdrawal ... purse only contained...'
+                error: 'Error withdrawal ... purse only contained...',
             },
-        }
+        },
     ]);
 
     const offerUpdateErrorWithPayout = harden({
@@ -183,6 +183,6 @@ test('handleWalletUpdate', t => {
                     Bid: moola.make(12_000_000n),
                 },
             },
-        }
+        },
     ]);
 });

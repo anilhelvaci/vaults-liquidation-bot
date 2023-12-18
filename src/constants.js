@@ -21,10 +21,4 @@ const StateManagerKeys = harden({
     CREDIT_MANAGER: 'creditManager',
 });
 
-export {
-    StateUpdates,
-    BID_BRAND_NAME,
-    StateManagerKeys,
-    RETRY_LIMIT,
-    MILI_SEC,
-};
+export { StateUpdates, BID_BRAND_NAME, StateManagerKeys, RETRY_LIMIT, MILI_SEC };
