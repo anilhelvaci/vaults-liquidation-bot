@@ -7,10 +7,23 @@ import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { E } from '@endo/far';
 import { eventLoopIteration } from '@agoric/internal/src/testing-utils.js';
 import { natSafeMath } from '@agoric/zoe/src/contractSupport/safeMath.js';
+import { StateManagerKeys } from '../../src/constants.js';
+import { AmountMath } from '@agoric/ertp/src/index.js';
+import { makeRatio } from '@agoric/ui-components/src/ratio.js';
+import { ratioGTE } from '@agoric/zoe/src/contractSupport/index.js';
 
 const BIDDER_ADDRESS = 'agoricBidder';
 const BASE_POINTS = 10_000n;
 const DENOM_VALUE = 1_000_000n;
+
+const isWithinOneBips = (t, compareAmount, baseAmount) => {
+    t.truthy(
+        ratioGTE(
+            makeRatio(1n, compareAmount.brand, BASE_POINTS),
+            makeRatioFromAmounts(AmountMath.subtract(compareAmount, baseAmount), baseAmount),
+        ),
+    );
+};
 
 test.before(async t => {
     t.context = await makeTestContext();
@@ -330,55 +343,125 @@ test.serial('arb-manager-controlled-spend', async t => {
 
     // Current time 140n, current auction ends at 160n, start delay is 10n
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
+    t.log('schedule', schedules.nextAuctionSchedule);
     await suite.advanceTo(170n); // Start next auction
 
-    const { startArbing, subs } = makeMockArbitrager(suite, utils, 1);
+    const { startArbing, subs, stateManager, arbitrageManager } = makeMockArbitrager(suite, utils, 1);
     startArbing();
 
     await suite.advanceTo(175n);
-    const clockUpdateOne = await E(subs.bookSub).getUpdateSince();
-    t.deepEqual(clockUpdateOne.value, {
-        collateralAvailable: suite.makeCollateral(50_000_000n),
-        currentPriceLevel: makeRatioFromAmounts(
-            suite.makeBid(7_850_000n * BASE_POINTS),
-            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
-        ),
-        proceedsRaised: undefined,
-        remainingProceedsGoal: null,
-        startCollateral: suite.makeCollateral(50_000_000n),
-        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
-        startProceedsGoal: null,
-    });
+    await eventLoopIteration();
+
+    const {
+        [StateManagerKeys.CREDIT_MANAGER]: { getCredit },
+    } = stateManager.getState();
 
     await suite.advanceTo(180n);
-    const clockUpdateTwo = await E(subs.bookSub).getUpdateSince();
-    t.deepEqual(clockUpdateTwo.value, {
-        collateralAvailable: suite.makeCollateral(50_000_000n),
+    await eventLoopIteration();
+
+    const clockUpdateOne = await E(subs.bookSub).getUpdateSince();
+    t.like(clockUpdateOne.value, {
+        collateralAvailable: suite.makeCollateral(50_000_000n - 3_352_329n),
         currentPriceLevel: makeRatioFromAmounts(
             suite.makeBid(7_457_500n * BASE_POINTS),
             suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
         ),
-        proceedsRaised: undefined,
-        remainingProceedsGoal: null,
-        startCollateral: suite.makeCollateral(50_000_000n),
-        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
-        startProceedsGoal: null,
     });
 
+    const [placedBidOne] = (await Promise.all(arbitrageManager.getBidLog())).slice(-2);
+    const creditOne = getCredit();
+    t.is(placedBidOne.msg, 'Bid Placed');
+    t.like(placedBidOne.data, {
+        offerId: 'place-bid-0',
+        bidUtils: {
+            bidAmount: suite.makeBid(25_000_000n),
+        },
+    });
+
+    // Make sure the difference is less than 1 bips
+    isWithinOneBips(t, creditOne, suite.makeBid(75_000_000n));
+
     await suite.advanceTo(185n);
-    const clockUpdateThree = await E(subs.bookSub).getUpdateSince();
-    t.deepEqual(clockUpdateThree.value, {
-        collateralAvailable: suite.makeCollateral(50_000_000n - 1_415_428n),
+    await eventLoopIteration();
+
+    const clockUpdateTwo = await E(subs.bookSub).getUpdateSince();
+    t.like(clockUpdateTwo.value, {
+        collateralAvailable: suite.makeCollateral(46_647_671n - 3_538_570n),
         currentPriceLevel: makeRatioFromAmounts(
             suite.makeBid(7_065_000n * BASE_POINTS),
             suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
         ),
-        proceedsRaised: undefined,
-        remainingProceedsGoal: null,
-        startCollateral: suite.makeCollateral(50_000_000n),
-        startPrice: makeRatioFromAmounts(suite.makeBid(7_850_000n), denomAmount),
-        startProceedsGoal: null,
     });
+
+    const [placedBidTwo] = (await Promise.all(arbitrageManager.getBidLog())).slice(-2);
+    t.is(placedBidTwo.msg, 'Bid Placed');
+    t.like(placedBidTwo.data, {
+        offerId: 'place-bid-1',
+        bidUtils: {
+            bidAmount: suite.makeBid(25_000_000n),
+        },
+    });
+
+    // Make sure the difference is less than 1 bips
+    const creditTwo = getCredit();
+    isWithinOneBips(t, creditTwo, suite.makeBid(50_000_000n));
+
+    await suite.advanceTo(190n);
+    await eventLoopIteration();
+
+    const clockUpdateThree = await E(subs.bookSub).getUpdateSince();
+    t.like(clockUpdateThree.value, {
+        collateralAvailable: suite.makeCollateral(43_109_101n - 3_746_721n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(6_672_500n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+    });
+
+    const [placedBidThree] = (await Promise.all(arbitrageManager.getBidLog())).slice(-2);
+    t.is(placedBidThree.msg, 'Bid Placed');
+    t.like(placedBidThree.data, {
+        offerId: 'place-bid-2',
+        bidUtils: {
+            bidAmount: suite.makeBid(25_000_000n),
+        },
+    });
+
+    // Make sure the difference is less than 1 bips
+    const creditThree = getCredit();
+    isWithinOneBips(t, creditThree, suite.makeBid(25_000_000n));
+
+    await suite.advanceTo(195n);
+    await eventLoopIteration();
+
+    const clockUpdateFour = await E(subs.bookSub).getUpdateSince();
+    t.like(clockUpdateFour.value, {
+        collateralAvailable: suite.makeCollateral(39_362_380n - 3_980_891n),
+        currentPriceLevel: makeRatioFromAmounts(
+            suite.makeBid(6_280_000n * BASE_POINTS),
+            suite.makeCollateral(DENOM_VALUE * BASE_POINTS),
+        ),
+    });
+
+    const [placeBidFour] = (await Promise.all(arbitrageManager.getBidLog())).slice(-2);
+    t.is(placeBidFour.msg, 'Bid Placed');
+    t.like(placeBidFour.data, {
+        offerId: 'place-bid-3',
+        bidUtils: {
+            bidAmount: suite.makeBid(25_000_000n),
+        },
+    });
+
+    // Make sure the difference is less than 1 bips
+    const creditFour = getCredit();
+    t.falsy(AmountMath.isGTE(creditFour, suite.makeBid(25_000_000n)));
+
+    await suite.advanceTo(200n);
+    await eventLoopIteration();
+
+    const [insufficientCreditBid] = (await Promise.all(arbitrageManager.getBidLog())).slice(-1);
+    t.is(insufficientCreditBid.msg, 'Insufficient credit');
+    t.falsy(AmountMath.isGTE(insufficientCreditBid.data.credit, suite.makeBid(25_000_000n)));
 });
 
 test.serial('arb-manager-controlled-spend-percentage', async t => {

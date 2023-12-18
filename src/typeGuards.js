@@ -8,11 +8,11 @@ export const DELTA_SHAPE = harden({
 export const SPEND_TYPE_SHAPE = harden(
     M.or(
         {
-            type: 'flash'
+            type: 'flash',
         },
         {
             type: 'controlled',
-            controlFactor: M.nat()
-        }
-    )
+            controlFactor: M.nat(),
+        },
+    ),
 );
