@@ -89,13 +89,10 @@ test.serial('placed-bid-settles-percentage-strategy', async t => {
     await eventLoopIteration();
 
     await suite.advanceTo(175n); // currentPrice = externalPrice
-    await eventLoopIteration();
 
     await suite.advanceTo(180n); // currentPrice = externalPrice * 0,95
-    await eventLoopIteration();
 
     await suite.advanceTo(185n); // currentPrice = externalPrice * 0,9 - Now we should see a bid, delta = 6%
-    await eventLoopIteration();
 
     const bidLog = await Promise.all(arbitrageManager.getBidLog());
     const noBids = bidLog.slice(0, 3);
@@ -337,7 +334,6 @@ test.serial('arb-manager-percentage-strategy', async t => {
 
 test.serial('arb-manager-controlled-spend', async t => {
     const suite = makeTestSuite(t.context);
-    const denomAmount = suite.makeCollateral(DENOM_VALUE);
     const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS });
     const schedules = await suite.getAuctionSchedules();
 
@@ -350,14 +346,12 @@ test.serial('arb-manager-controlled-spend', async t => {
     startArbing();
 
     await suite.advanceTo(175n);
-    await eventLoopIteration();
 
     const {
         [StateManagerKeys.CREDIT_MANAGER]: { getCredit },
     } = stateManager.getState();
 
     await suite.advanceTo(180n);
-    await eventLoopIteration();
 
     const clockUpdateOne = await E(subs.bookSub).getUpdateSince();
     t.like(clockUpdateOne.value, {
@@ -382,7 +376,6 @@ test.serial('arb-manager-controlled-spend', async t => {
     isWithinOneBips(t, creditOne, suite.makeBid(75_000_000n));
 
     await suite.advanceTo(185n);
-    await eventLoopIteration();
 
     const clockUpdateTwo = await E(subs.bookSub).getUpdateSince();
     t.like(clockUpdateTwo.value, {
@@ -407,7 +400,6 @@ test.serial('arb-manager-controlled-spend', async t => {
     isWithinOneBips(t, creditTwo, suite.makeBid(50_000_000n));
 
     await suite.advanceTo(190n);
-    await eventLoopIteration();
 
     const clockUpdateThree = await E(subs.bookSub).getUpdateSince();
     t.like(clockUpdateThree.value, {
@@ -432,7 +424,6 @@ test.serial('arb-manager-controlled-spend', async t => {
     isWithinOneBips(t, creditThree, suite.makeBid(25_000_000n));
 
     await suite.advanceTo(195n);
-    await eventLoopIteration();
 
     const clockUpdateFour = await E(subs.bookSub).getUpdateSince();
     t.like(clockUpdateFour.value, {
@@ -457,7 +448,6 @@ test.serial('arb-manager-controlled-spend', async t => {
     t.falsy(AmountMath.isGTE(creditFour, suite.makeBid(25_000_000n)));
 
     await suite.advanceTo(200n);
-    await eventLoopIteration();
 
     const [insufficientCreditBid] = (await Promise.all(arbitrageManager.getBidLog())).slice(-1);
     t.is(insufficientCreditBid.msg, 'Insufficient credit');
@@ -580,25 +570,18 @@ test.serial('auction-round-finishes-then-restarts', async t => {
     await eventLoopIteration();
 
     await suite.advanceTo(175n); // currentPrice = externalPrice
-    await eventLoopIteration();
 
     await suite.advanceTo(180n); // currentPrice = externalPrice * 0,95
-    await eventLoopIteration();
 
     await suite.advanceTo(185n); // currentPrice = externalPrice * 0,9 - Now we should see a bid, delta = 6%
-    await eventLoopIteration();
 
     await suite.advanceTo(190n); // currentPrice = externalPrice * 0,85 - Now we should see a bid, delta = 6%
-    await eventLoopIteration();
 
     await suite.advanceTo(195n); // currentPrice = externalPrice * 0,8 - Now we should see a bid, delta = 6%
-    await eventLoopIteration();
 
     await suite.advanceTo(200n); // currentPrice = externalPrice * 0,75 - Now we should see a bid, delta = 6%
-    await eventLoopIteration();
 
     await suite.advanceTo(205n); // currentPrice = externalPrice * 0,7 - Now we should see a bid, delta = 6%
-    await eventLoopIteration();
 
     const bidLog = await Promise.all(arbitrageManager.getBidLog());
     const noState = bidLog.pop();
