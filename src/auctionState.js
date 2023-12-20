@@ -85,7 +85,8 @@ const makeAuctionStateManager = arbConfig => {
         return !!(
             state[StateManagerKeys.BID_BRAND] &&
             state[StateManagerKeys.COLLATERAL_BRAND] &&
-            state[StateManagerKeys.CREDIT_MANAGER]
+            state[StateManagerKeys.CREDIT_MANAGER] &&
+            state[StateManagerKeys.BOOK_STATE].currentPriceLevel
         );
     };
 

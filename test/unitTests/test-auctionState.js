@@ -40,8 +40,15 @@ test('tryInit', t => {
     });
 
     const stateTwo = getState();
-    t.truthy(stateTwo.initialized);
-    t.deepEqual(stateTwo[StateManagerKeys.CREDIT_MANAGER].getCredit(), moola.make(config.credit));
+    t.falsy(stateTwo.initialized);
+
+    updateState(StateManagerKeys.BOOK_STATE, {
+        currentPriceLevel: {},
+    });
+
+    const stateThree = getState();
+    t.truthy(stateThree.initialized);
+    t.deepEqual(stateThree[StateManagerKeys.CREDIT_MANAGER].getCredit(), moola.make(config.credit));
 });
 
 test('handleWalletUpdate', t => {

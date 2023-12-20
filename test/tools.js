@@ -163,11 +163,11 @@ harden(makeMockAuctionWatcher);
 
 const makeMockExternalManager = (bidBrand, colBrand) => {
     let shouldSuccess = true;
+    let price = null;
 
     const fetchExternalPrice = () => {
         // ATOM price on 31-10-2023
-        const mockPrice = makeRatio(7_850_000n, bidBrand, 1_000_000n, colBrand);
-
+        const mockPrice = makeRatio(price ? price : 7_850_000n, bidBrand, 1_000_000n, colBrand);
         return shouldSuccess ? Promise.resolve(mockPrice) : Promise.reject(new Error('MockReject'));
     };
 
@@ -187,6 +187,7 @@ const makeMockExternalManager = (bidBrand, colBrand) => {
         fetchExternalPrice,
         sell,
         setShouldSuccess: result => (shouldSuccess = result),
+        setPrice: newPrice => price = newPrice,
     });
 };
 

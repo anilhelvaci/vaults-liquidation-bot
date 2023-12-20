@@ -562,3 +562,83 @@ test.serial('arb-manager-cannot-fetch-external', async t => {
         }),
     );
 });
+
+test.serial('auction-round-finishes-then-restarts', async t => {
+    const suite = makeTestSuite(t.context);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS });
+    const schedules = await suite.getAuctionSchedules();
+
+    // Current time 140n, current auction ends at 160n, start delay is 10n ends at 205n
+    t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
+    t.is(schedules.nextAuctionSchedule?.endTime.absValue, 205n);
+    await suite.advanceTo(170n); // Start next auction
+
+    // Use percentage strategy
+    const { arbitrageManager, startArbing, externalManager, stateManager } = makeMockArbitrager(suite, utils);
+    externalManager.setPrice(1_000_000n);
+    startArbing(); // currentPrice = externalPrice * 1,05
+    await eventLoopIteration();
+
+    await suite.advanceTo(175n); // currentPrice = externalPrice
+    await eventLoopIteration();
+
+    await suite.advanceTo(180n); // currentPrice = externalPrice * 0,95
+    await eventLoopIteration();
+
+    await suite.advanceTo(185n); // currentPrice = externalPrice * 0,9 - Now we should see a bid, delta = 6%
+    await eventLoopIteration();
+
+    await suite.advanceTo(190n); // currentPrice = externalPrice * 0,85 - Now we should see a bid, delta = 6%
+    await eventLoopIteration();
+
+    await suite.advanceTo(195n); // currentPrice = externalPrice * 0,8 - Now we should see a bid, delta = 6%
+    await eventLoopIteration();
+
+    await suite.advanceTo(200n); // currentPrice = externalPrice * 0,75 - Now we should see a bid, delta = 6%
+    await eventLoopIteration();
+
+    await suite.advanceTo(205n); // currentPrice = externalPrice * 0,7 - Now we should see a bid, delta = 6%
+    await eventLoopIteration();
+
+    const bidLog = await Promise.all(arbitrageManager.getBidLog());
+    const noState = bidLog.pop();
+
+    t.log('Bid Log', bidLog);
+    t.log('No state', noState);
+
+    const rates = [105n, 100n, 95n, 90n, 85n, 80n, 75n, 70n, 1n, 1n];
+    [...bidLog].forEach((bid, index) => {
+        t.deepEqual(bid.msg, 'No Bid');
+        t.like(bid.data, {
+            bookState: {
+                currentPriceLevel: makeRatioFromAmounts(
+                    suite.makeBid(natSafeMath.multiply(natSafeMath.floorDivide(7_850_000n, 100n), rates[index])),
+                    suite.makeCollateral(1_000_000n),
+                ),
+            },
+        });
+    });
+
+    t.deepEqual(noState.msg, 'State not initialized');
+    t.like(noState.data, {
+        bookState: {
+            currentPriceLevel: null,
+        },
+        scheduleState: {
+            nextStartTime: {
+                absValue: 250n
+            }
+        }
+    });
+
+    // Update the new price to something that is more than startPrice * 1,05
+    externalManager.setPrice(8_843_000n);
+
+    await suite.advanceTo(250n);
+    const [placeBid] = (await Promise.all(arbitrageManager.getBidLog())).slice(-2);
+
+    t.is(placeBid.msg, 'Bid Placed');
+    t.like(placeBid.data, {
+        offerId: 'place-bid-0',
+    });
+});
