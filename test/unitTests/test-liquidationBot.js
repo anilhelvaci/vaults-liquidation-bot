@@ -49,7 +49,7 @@ test.serial('placed-bid-settles', async t => {
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
     await suite.advanceTo(170n); // Start next auction
 
-    const { bidManager } = makeMockArbitrager(suite, utils);
+    const { bidManager } = makeMockArbitrager({ suite, utils });
 
     // 350 - 300 * (1,1 * 1,05) = 3,5 Bid and 300 Collateral in payouts
     const { offerId, states } = bidManager.placeBid({
@@ -84,7 +84,7 @@ test.serial('placed-bid-settles-percentage-strategy', async t => {
     await suite.advanceTo(170n); // Start next auction
 
     // Use percentage strategy
-    const { arbitrageManager, startArbing } = makeMockArbitrager(suite, utils, 2);
+    const { arbitrageManager, startArbing } = makeMockArbitrager({ suite, utils, configIndex: 2 });
     startArbing(); // currentPrice = externalPrice * 1,05
     await eventLoopIteration();
 
@@ -151,7 +151,7 @@ test.serial('placed-bid-throws', async t => {
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
     await suite.advanceTo(170n); // Start next auction
 
-    const { bidManager } = makeMockArbitrager(suite, utils);
+    const { bidManager } = makeMockArbitrager({ suite, utils });
 
     // 350 - 300 * (1,1 * 1,05) = 3,5 Bid and 300 Collateral in payouts
     const { states } = bidManager.placeBid({
@@ -173,7 +173,7 @@ test.serial('placed-bid-cancel', async t => {
 
     await suite.advanceTo(170n); // Start next auction
 
-    const { bidManager } = makeMockArbitrager(suite, utils);
+    const { bidManager } = makeMockArbitrager({ suite, utils });
 
     const { offerId } = bidManager.placeBid({
         bidAmount: suite.makeBid(350n),
@@ -210,7 +210,7 @@ test.serial('arb-manager', async t => {
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
     await suite.advanceTo(170n); // Start next auction
 
-    const { startArbing, subs } = makeMockArbitrager(suite, utils);
+    const { startArbing, subs } = makeMockArbitrager({ suite, utils });
     startArbing();
 
     await suite.advanceTo(175n);
@@ -283,7 +283,7 @@ test.serial('arb-manager-percentage-strategy', async t => {
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
     await suite.advanceTo(170n); // Start next auction
 
-    const { startArbing, subs } = makeMockArbitrager(suite, utils, 2);
+    const { startArbing, subs } = makeMockArbitrager({ suite, utils, configIndex: 2 });
     startArbing();
 
     await suite.advanceTo(175n);
@@ -342,7 +342,7 @@ test.serial('arb-manager-controlled-spend', async t => {
     t.log('schedule', schedules.nextAuctionSchedule);
     await suite.advanceTo(170n); // Start next auction
 
-    const { startArbing, subs, stateManager, arbitrageManager } = makeMockArbitrager(suite, utils, 1);
+    const { startArbing, subs, stateManager, arbitrageManager } = makeMockArbitrager({ suite, utils, configIndex: 1 });
     startArbing();
 
     await suite.advanceTo(175n);
@@ -464,7 +464,7 @@ test.serial('arb-manager-controlled-spend-percentage', async t => {
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
     await suite.advanceTo(170n); // Start next auction
 
-    const { startArbing, subs } = makeMockArbitrager(suite, utils, 3);
+    const { startArbing, subs } = makeMockArbitrager({ suite, utils, configIndex: 3 });
     startArbing();
 
     await suite.advanceTo(175n);
@@ -523,7 +523,7 @@ test.serial('arb-manager-cannot-fetch-external', async t => {
     t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
     await suite.advanceTo(170n); // Start next auction
 
-    const { startArbing, subs, externalManager, arbitrageManager } = makeMockArbitrager(suite, utils);
+    const { startArbing, subs, externalManager, arbitrageManager } = makeMockArbitrager({ suite, utils });
     startArbing();
     externalManager.setShouldSuccess(false); // Promise for external price request rejects
 
@@ -564,7 +564,7 @@ test.serial('auction-round-finishes-then-restarts', async t => {
     await suite.advanceTo(170n); // Start next auction
 
     // Use percentage strategy
-    const { arbitrageManager, startArbing, externalManager, stateManager } = makeMockArbitrager(suite, utils);
+    const { arbitrageManager, startArbing, externalManager } = makeMockArbitrager({ suite, utils });
     externalManager.setPrice(1_000_000n);
     startArbing(); // currentPrice = externalPrice * 1,05
     await eventLoopIteration();
@@ -609,9 +609,9 @@ test.serial('auction-round-finishes-then-restarts', async t => {
         },
         scheduleState: {
             nextStartTime: {
-                absValue: 250n
-            }
-        }
+                absValue: 250n,
+            },
+        },
     });
 
     // Update the new price to something that is more than startPrice * 1,05
@@ -624,4 +624,76 @@ test.serial('auction-round-finishes-then-restarts', async t => {
     t.like(placeBid.data, {
         offerId: 'place-bid-0',
     });
+});
+
+test.serial('checks-out-when-not-enough-credit', async t => {
+    const suite = makeTestSuite(t.context);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS });
+    const schedules = await suite.getAuctionSchedules();
+
+    // Current time 140n, current auction ends at 160n, start delay is 10n ends at 205n
+    t.is(schedules.nextAuctionSchedule?.startTime.absValue, 170n);
+    t.is(schedules.nextAuctionSchedule?.endTime.absValue, 205n);
+    await suite.advanceTo(170n); // Start next auction
+
+    const finish = async stateSnapshot => {
+        t.log('Inside finish body');
+        t.like(stateSnapshot, {
+            bookState: {
+                currentPriceLevel: makeRatioFromAmounts(
+                    suite.makeBid(natSafeMath.multiply(natSafeMath.floorDivide(7_850_000n, 100n), 85n)),
+                    suite.makeCollateral(1_000_000n),
+                ),
+            },
+        });
+    };
+
+    // Use percentage strategy
+    const { arbitrageManager, startArbing } = makeMockArbitrager({ suite, utils, finish });
+    startArbing(); // currentPrice = externalPrice * 1,05
+    await eventLoopIteration();
+
+    await suite.advanceTo(175n); // currentPrice = externalPrice
+    await suite.advanceTo(180n); // currentPrice = externalPrice * 0,95
+    await suite.advanceTo(185n); // currentPrice = externalPrice * 0,9 - Now we should see a bid, delta = 6%
+
+    // Check bid log
+    const bidLogOne = await Promise.all(arbitrageManager.getBidLog());
+    t.log(bidLogOne);
+    const noBids = bidLogOne.slice(0, 2);
+    const [placeBid] = bidLogOne.slice(-2);
+
+    const rates = [105n, 100n];
+    [...noBids].forEach((bid, index) => {
+        t.deepEqual(bid.msg, 'No Bid');
+        t.like(bid.data, {
+            bookState: {
+                currentPriceLevel: makeRatioFromAmounts(
+                    suite.makeBid(natSafeMath.multiply(natSafeMath.floorDivide(7_850_000n, 100n), rates[index])),
+                    suite.makeCollateral(1_000_000n),
+                ),
+            },
+        });
+    });
+
+    t.is(placeBid.msg, 'Bid Placed');
+    t.like(placeBid.data, {
+        offerId: 'place-bid-0',
+    });
+
+    await suite.advanceTo(190n); // currentPrice = externalPrice * 0,85 - Now we should see a bid, delta = 6%
+    // Check finish got the correct snapshot, bidLog has an entry for insufficient credit
+
+    const bidLogTwo = await Promise.all(arbitrageManager.getBidLog());
+    t.log(bidLogTwo);
+    t.is(bidLogTwo.length, 6);
+
+    const insufficientBid = bidLogTwo.pop();
+    t.is(insufficientBid.msg, 'Insufficient credit');
+
+    await suite.advanceTo(195n); // currentPrice = externalPrice * 0,8 - Now we should see a bid, delta = 6%
+
+    // Check bidLog has no new entries
+    const bidLogThree = await Promise.all(arbitrageManager.getBidLog());
+    t.is(bidLogThree.length, 6);
 });

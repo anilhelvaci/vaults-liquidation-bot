@@ -11,16 +11,20 @@ import { makeScalarBigMapStore } from '@agoric/vat-data';
  * @param externalManager
  * @param bidManager
  * @param arbConfig
+ * @param {(Object) => Promise} finish
  * @return {{getBidLog: (function(): *[]), onStateUpdate: onStateUpdate}}
  */
-const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbConfig) => {
+const makeArbitrageManager = ({ getAuctionState, externalManager, bidManager, arbConfig, finish }) => {
     const bidLog = [];
     const externalLog = [];
     const bidHistory = makeScalarBigMapStore('Bid History');
 
     let retryCount = 0;
+    let isAcceptingUpdates = true;
 
     const onStateUpdate = type => {
+        if (isAcceptingUpdates === false) return;
+
         switch (type) {
             case StateManagerKeys.BOOK_STATE:
                 const stateSnapshot = getAuctionState();
@@ -97,11 +101,14 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
 
         if (ratioGTE(worstDesiredPrice, currentPriceLevel)) {
             const bidUtils = calculateBidUtils(stateSnapshot, worstDesiredPrice, harden(arbConfig));
-            if (!creditManager.checkEnoughBalance(bidUtils.bidAmount))
+            if (!creditManager.checkEnoughBalance(bidUtils.bidAmount)) {
+                isAcceptingUpdates = false;
+                finish(stateSnapshot);
                 return harden({
                     msg: 'Insufficient credit',
                     data: { bidUtils, credit: creditManager.getCredit() },
                 });
+            }
 
             if (!checkHistory(currentPriceLevel.numerator.value))
                 return harden({
