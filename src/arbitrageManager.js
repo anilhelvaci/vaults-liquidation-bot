@@ -11,16 +11,20 @@ import { makeScalarBigMapStore } from '@agoric/vat-data';
  * @param externalManager
  * @param bidManager
  * @param arbConfig
+ * @param {(Object) => Promise} finish
  * @return {{getBidLog: (function(): *[]), onStateUpdate: onStateUpdate}}
  */
-const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbConfig) => {
+const makeArbitrageManager = ({ getAuctionState, externalManager, bidManager, arbConfig, finish }) => {
     const bidLog = [];
     const externalLog = [];
     const bidHistory = makeScalarBigMapStore('Bid History');
 
     let retryCount = 0;
-    
+    let isAcceptingUpdates = true;
+
     const onStateUpdate = type => {
+        if (isAcceptingUpdates === false) return;
+
         switch (type) {
             case StateManagerKeys.BOOK_STATE:
                 const stateSnapshot = getAuctionState();
@@ -75,7 +79,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
             return harden({ code: 'error', result: e });
         }
     };
-    
+
     const maybePlaceBid = async stateSnapshot => {
         const {
             initialized,
@@ -97,11 +101,14 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
 
         if (ratioGTE(worstDesiredPrice, currentPriceLevel)) {
             const bidUtils = calculateBidUtils(stateSnapshot, worstDesiredPrice, harden(arbConfig));
-            if (!creditManager.checkEnoughBalance(bidUtils.bidAmount))
+            if (!creditManager.checkEnoughBalance(bidUtils.bidAmount)) {
+                isAcceptingUpdates = false;
+                finish(stateSnapshot);
                 return harden({
                     msg: 'Insufficient credit',
                     data: { bidUtils, credit: creditManager.getCredit() },
                 });
+            }
 
             if (!checkHistory(currentPriceLevel.numerator.value))
                 return harden({
@@ -110,7 +117,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
                 });
 
             const { offerId } = bidManager.placeBid(bidUtils);
-            bidHistory.set(currentPriceLevel.numerator.value, harden({ offerId, state: 'pending'}));
+            bidHistory.set(currentPriceLevel.numerator.value, harden({ offerId, state: 'pending' }));
             return harden({
                 msg: 'Bid Placed',
                 data: {
@@ -135,7 +142,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
         const {
             bookState: { currentPriceLevel },
         } = stateSnapshot;
-        
+
         if (currentPriceLevel === null) return bidHistory.clear();
         if (bidHistory.has(currentPriceLevel.numerator.value)) return;
 
@@ -154,16 +161,18 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
         const bidData = bidHistory.get(currentPriceLevel.numerator.value);
         const latestMatchingOffer = [...offers].reverse().find(([id, _]) => id === bidData.offerId);
 
-        if(!latestMatchingOffer) return;
+        if (!latestMatchingOffer) return;
 
         const [_, offerData] = latestMatchingOffer;
 
         const findBidState = () => {
-            const { status: { error, numWantsSatisfied, payouts }} = offerData;
+            const {
+                status: { error, numWantsSatisfied, payouts },
+            } = offerData;
 
             if (error) return 'error';
             if (numWantsSatisfied && numWantsSatisfied === 1 && payouts) return 'success';
-        }
+        };
 
         const updatedData = harden({
             ...bidData,
@@ -182,7 +191,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
      *   - If it is not, sell the amount of collateral specified in payouts
      *   - If it is, sell the threshold amount
      */
-    const triggerExternalSale = (offerData) => {
+    const triggerExternalSale = offerData => {
         const stateSnapshot = getAuctionState();
         const sellUtils = calculateSellUtils(stateSnapshot, offerData, arbConfig);
         const externalP = externalManager.sell(sellUtils);
@@ -198,7 +207,7 @@ const makeArbitrageManager = (getAuctionState, externalManager, bidManager, arbC
             bidLog.push(bidPromise);
         }, arbConfig.retryInterval);
         retryCount += 1;
-    }
+    };
 
     const checkHistory = key => {
         const bidData = bidHistory.get(key);

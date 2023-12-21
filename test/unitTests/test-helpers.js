@@ -10,12 +10,12 @@ test.before(t => {
 
     t.context = harden({
         bidKit,
-        collateralKit
+        collateralKit,
     });
 });
 
 test('initial', t => {
-   t.pass('Initial test');
+    t.pass('Initial test');
 });
 
 test('desired-price-calculations-exact', t => {
@@ -23,16 +23,8 @@ test('desired-price-calculations-exact', t => {
     const arbConfig = getConfig();
 
     const externalPrice = makeRatio(7_850_000n, bidKit.brand, 1_000_000n, collateralKit.brand);
-    const calculatedPrice = calculateDPExactDelta(arbConfig.delta, {  bidBrand: bidKit.brand }, externalPrice);
-    t.deepEqual(
-        calculatedPrice,
-        makeRatio(
-            7_350_000n,
-            bidKit.brand,
-            1_000_000n,
-            collateralKit.brand,
-        )
-    );
+    const calculatedPrice = calculateDPExactDelta(arbConfig.delta, { bidBrand: bidKit.brand }, externalPrice);
+    t.deepEqual(calculatedPrice, makeRatio(7_350_000n, bidKit.brand, 1_000_000n, collateralKit.brand));
 });
 
 test('bid-utils', t => {
@@ -45,14 +37,14 @@ test('bid-utils', t => {
         bidBrand: bidKit.brand,
         bookState: {
             currentPriceLevel: currentPrice,
-        }
-    }
+        },
+    };
 
     const utils = calculateBidUtils(stateSnapshot, worstDesiredPrice, harden(config));
 
     t.deepEqual(utils, {
         bidAmount: AmountMath.make(bidKit.brand, 100_000_000n),
-        maxColAmount: AmountMath.make(collateralKit.brand, 14154281n,),
+        maxColAmount: AmountMath.make(collateralKit.brand, 14154281n),
         price: worstDesiredPrice,
     });
 });

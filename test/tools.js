@@ -1,36 +1,38 @@
 import { E } from '@endo/far';
 import { eventLoopIteration } from '@agoric/notifier/tools/testSupports.js';
 import { makeRatioFromAmounts, makeRatio } from '@agoric/zoe/src/contractSupport/ratio.js';
-import { subscribeEach } from "@agoric/notifier";
+import { subscribeEach } from '@agoric/notifier';
 import { StateManagerKeys } from '../src/constants.js';
 import { getConfig, setBookState } from '../src/helpers.js';
 import { makeAuctionStateManager } from '../src/auctionState.js';
 import { makeBidManager } from '../src/bidManager.js';
 import { makeArbitrageManager } from '../src/arbitrageManager.js';
 
-const makeSmartWalletOfferSender = (
-    offersFacet,
-    eventLoopCallback = eventLoopIteration,
-) => {
+const makeSmartWalletOfferSender = (offersFacet, eventLoopCallback = eventLoopIteration) => {
     const send = async offerSpec => {
         await E(offersFacet).executeOffer(offerSpec);
         await eventLoopCallback();
     };
 
+    const cancel = async offerId => {
+        await E(offersFacet).tryExitOffer(offerId);
+        await eventLoopCallback();
+    };
+
     return harden({
         send,
+        cancel,
     });
 };
 harden(makeSmartWalletOfferSender);
 
 const getSmartWalletUtils = async smartWallet => {
-    const [depositFacet, offersFacet, currentSub, updateSub] =
-        await Promise.all([
-            E(smartWallet).getDepositFacet(),
-            E(smartWallet).getOffersFacet(),
-            E(smartWallet).getCurrentSubscriber(),
-            E(smartWallet).getUpdatesSubscriber(),
-        ]);
+    const [depositFacet, offersFacet, currentSub, updateSub] = await Promise.all([
+        E(smartWallet).getDepositFacet(),
+        E(smartWallet).getOffersFacet(),
+        E(smartWallet).getCurrentSubscriber(),
+        E(smartWallet).getUpdatesSubscriber(),
+    ]);
 
     return harden({
         depositFacet,
@@ -48,18 +50,14 @@ const makeTestSuite = context => {
     } = context;
 
     const provideWalletAndUtils = async address => {
-        const smartWallet =
-            await walletFactoryDriver.simpleProvideWallet(address);
+        const smartWallet = await walletFactoryDriver.simpleProvideWallet(address);
         const utils = await getSmartWalletUtils(smartWallet);
 
         return harden({ smartWallet, utils });
     };
 
     const setupCollateralAuction = (collateralValue = 1000n) => {
-        return auctionDriver.setupCollateralAuction(
-            collateral,
-            collateral.make(collateralValue),
-        );
+        return auctionDriver.setupCollateralAuction(collateral, collateral.make(collateralValue));
     };
 
     const fundBid = (depositFacet, value) => {
@@ -125,7 +123,7 @@ harden(makeTestSuite);
 
 const makeMockAuctionWatcher = ({ bookSub, govSub, scheduleSub, walletUpdateSub }) => {
     let notifier;
-    const watch = (notify) => {
+    const watch = notify => {
         notifier = notify;
         watchBook();
         watchGovernance();
@@ -165,16 +163,11 @@ harden(makeMockAuctionWatcher);
 
 const makeMockExternalManager = (bidBrand, colBrand) => {
     let shouldSuccess = true;
+    let price = null;
 
     const fetchExternalPrice = () => {
         // ATOM price on 31-10-2023
-        const mockPrice = makeRatio(
-            7_850_000n,
-            bidBrand,
-            1_000_000n,
-            colBrand,
-        );
-
+        const mockPrice = makeRatio(price ? price : 7_850_000n, bidBrand, 1_000_000n, colBrand);
         return shouldSuccess ? Promise.resolve(mockPrice) : Promise.reject(new Error('MockReject'));
     };
 
@@ -186,18 +179,19 @@ const makeMockExternalManager = (bidBrand, colBrand) => {
             data: {
                 txHash: '0x01234',
                 sellUtils,
-            }
-        })
+            },
+        });
     };
 
     return harden({
         fetchExternalPrice,
         sell,
-        setShouldSuccess: result => shouldSuccess = result,
+        setShouldSuccess: result => (shouldSuccess = result),
+        setPrice: newPrice => (price = newPrice),
     });
 };
 
-const makeMockArbitrager = (suite, utils, configIndex) => {
+const makeMockArbitrager = ({ suite, utils, configIndex, finish = () => console.log('DummyFinish') }) => {
     const subs = suite.getSubscribersForWatcher();
     const bidBrand = suite.getBidBrand();
     const colBrand = suite.getCollateralBrand();
@@ -209,7 +203,13 @@ const makeMockArbitrager = (suite, utils, configIndex) => {
     const offerSender = makeSmartWalletOfferSender(utils.offersFacet);
     const bidManager = makeBidManager(offerSender);
     const externalManager = makeMockExternalManager(bidBrand, colBrand);
-    const arbitrageManager = makeArbitrageManager(stateManager.getState, externalManager, bidManager, arbConfig);
+    const arbitrageManager = makeArbitrageManager({
+        getAuctionState: stateManager.getState,
+        externalManager,
+        bidManager,
+        arbConfig,
+        finish,
+    });
     const notify = (type, data) => {
         stateManager.updateState(type, data);
         arbitrageManager.onStateUpdate(type);
@@ -218,10 +218,11 @@ const makeMockArbitrager = (suite, utils, configIndex) => {
     return harden({
         startArbing: () => arbWatcher.watch(notify),
         arbitrageManager,
+        stateManager,
         externalManager,
         bidManager,
         subs,
-    })
+    });
 };
 harden(makeMockAuctionWatcher);
 
