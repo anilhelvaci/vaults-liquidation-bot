@@ -13,6 +13,7 @@
     "test:state": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-auctionState.js -s -v",
     "test:helpers": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-helpers.js -s -v",
     "test:manager": "node _agstate/yarn-links/@agoric/inter-protocol/node_modules/.bin/ava test/unitTests/test-arbitrageManager.js -s -v",
+    "test:external": "ava test/unitTests/test-osmosisManager.js -s -v",
     "style:check": "prettier \"**/*.{js,ts}\" --check",
     "style:fix": "prettier \"**/*.{js,ts}\" --write"
   },
@@ -26,7 +27,11 @@
     "ava": "^5.3.0",
     "prettier": "^3.0.3",
     "tsx": "^3.12.8",
-    "osmojs": "^16.5.1"
+    "osmojs": "^16.5.1",
+    "@chain-registry/osmosis": "latest",
+    "cosmjs-utils": "latest",
+    "@cosmjs/amino": "latest",
+    "@cosmjs/crypto": "^0.31.3"
   },
   "ava": {
     "extensions": {
