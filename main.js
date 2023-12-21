@@ -6,7 +6,7 @@ import { getConfig } from './src/helpers.js';
 
 const main = async () => {
     const config = getConfig();
-    const { watch, marshaller } = makeAuctionWatcher(config.bookId);
+    const { watch, marshaller } = makeAuctionWatcher(config.bookId, config.networkConfig);
     const stateManager = makeAuctionStateManager();
     watch(stateManager.updateState);
     stateManager.getState();
