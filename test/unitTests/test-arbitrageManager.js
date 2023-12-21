@@ -36,7 +36,13 @@ test.beforeEach(t => {
     const externalManager = makeMockExternalManager(moola.brand, simolean.brand);
     const bidManager = makeMockBidManager();
 
-    const arbitrageManager = makeArbitrageManager(stateManager.getState, externalManager, bidManager, config);
+    const arbitrageManager = makeArbitrageManager({
+        getAuctionState: stateManager.getState,
+        externalManager,
+        bidManager,
+        arbConfig: config,
+        finish: async () => console.log('Dummy'),
+    });
 
     const notify = (key, data) => {
         stateManager.updateState(key, data);

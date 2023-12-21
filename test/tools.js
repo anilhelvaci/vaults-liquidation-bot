@@ -163,11 +163,11 @@ harden(makeMockAuctionWatcher);
 
 const makeMockExternalManager = (bidBrand, colBrand) => {
     let shouldSuccess = true;
+    let price = null;
 
     const fetchExternalPrice = () => {
         // ATOM price on 31-10-2023
-        const mockPrice = makeRatio(7_850_000n, bidBrand, 1_000_000n, colBrand);
-
+        const mockPrice = makeRatio(price ? price : 7_850_000n, bidBrand, 1_000_000n, colBrand);
         return shouldSuccess ? Promise.resolve(mockPrice) : Promise.reject(new Error('MockReject'));
     };
 
@@ -187,10 +187,11 @@ const makeMockExternalManager = (bidBrand, colBrand) => {
         fetchExternalPrice,
         sell,
         setShouldSuccess: result => (shouldSuccess = result),
+        setPrice: newPrice => (price = newPrice),
     });
 };
 
-const makeMockArbitrager = (suite, utils, configIndex) => {
+const makeMockArbitrager = ({ suite, utils, configIndex, finish = () => console.log('DummyFinish') }) => {
     const subs = suite.getSubscribersForWatcher();
     const bidBrand = suite.getBidBrand();
     const colBrand = suite.getCollateralBrand();
@@ -202,7 +203,13 @@ const makeMockArbitrager = (suite, utils, configIndex) => {
     const offerSender = makeSmartWalletOfferSender(utils.offersFacet);
     const bidManager = makeBidManager(offerSender);
     const externalManager = makeMockExternalManager(bidBrand, colBrand);
-    const arbitrageManager = makeArbitrageManager(stateManager.getState, externalManager, bidManager, arbConfig);
+    const arbitrageManager = makeArbitrageManager({
+        getAuctionState: stateManager.getState,
+        externalManager,
+        bidManager,
+        arbConfig,
+        finish,
+    });
     const notify = (type, data) => {
         stateManager.updateState(type, data);
         arbitrageManager.onStateUpdate(type);
