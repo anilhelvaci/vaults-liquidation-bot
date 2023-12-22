@@ -10,6 +10,7 @@ export const getPriceFeedKit = async powers => {
     } = powers;
 
     const [priceFeedKit] = await Promise.resolve(priceFeedKitP);
+    console.log(priceFeedKit);
 
     trace('Completed...');
 };
