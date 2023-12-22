@@ -23,8 +23,8 @@ vote:
 
 MANUAL-TIMER-SCRIPT = ${shell pwd}/src/proposals/manualTimerFaucet-script.js
 
-MANUAL-TIMER-CONTRACT_REF_BUNDLE_ID = @cache/manual-timer/b1-579ea40e21d905b97f69045c4f80599076810d5a3c4177d61cbf8990d7cd245e29f67110fb5f44e2e507467ae49fd83999b0bedae0985c7a69818a7c370bd0ce.json
-MANUAL-TIMER-MANIFEST_REF_BUNDLE_ID = @cache/manual-timer/b1-0f1fd07dae8955cd71c59802c743b3c490558f4a67c3aaff3294facc4bf0329243ad77d82c295c3cd58da8dad845c7095b81493fa9c6a1c7b63bd97a471e04e8.json
+MANUAL-TIMER-CONTRACT_REF_BUNDLE_ID = @cache/manual-timer/b1-64b95b1a011bcfef38c4ccc0dc50b5c831e272d5244f1257ce9c56537a467a032f3754caebe2272a5999406d333e11ef54eb8189035c78ed6e965a81b56663e6.json
+MANUAL-TIMER-MANIFEST_REF_BUNDLE_ID = @cache/manual-timer/b1-dbe02098bd20f6ed2e5160124a888741b36521ab3cc4d32cf7cbe75bb33d9dcf0fb8f2ace2d5e60f34dbf74029b86fd0520fb1b41801e6dc9949ad32c3326d58.json
 
 manual-timer-bundle:
 	rm -rf ${shell pwd}/cache/manual-timer/*
@@ -51,8 +51,8 @@ manual-timer-submit-core-eval: manual-timer-install-contract-bundle manual-timer
 
 ASSET-FAUCET-SCRIPT = ${shell pwd}/src/proposals/assetFaucet-script.js
 
-ASSET-FAUCET-CONTRACT_REF_BUNDLE_ID = @cache/asset-faucet/b1-53f076e76ccea9913a22b8197a050150b213a4f0df2aae9801b6b6673a9bac890eec3116da95d76a0751e729575a6d7c1d28c59fc78ef6faca110c47c11e0053.json
-ASSET-FAUCET-MANIFEST_REF_BUNDLE_ID = @cache/asset-faucet/b1-22cfcfaa263d462f74922f5b8f606dc79d51cace6acdf9ffc98bb3aea657f2d6f2f956343739dc290de3b78668cfe5f88ec88657e9dc1beeb17ce9e52b345347.json
+ASSET-FAUCET-CONTRACT_REF_BUNDLE_ID = @cache/asset-faucet/b1-1e841e43415f239d7cbe53850ffc32e8766ed5760657c289f9debc23445e0a32ed82d4e33a9ad53a0fbdf7ae21b4f0c5b06337a50f20422289f8531af186bba7.json
+ASSET-FAUCET-MANIFEST_REF_BUNDLE_ID = @cache/asset-faucet/b1-bc90824909ce251e1c1647c8348fcac80bc49fc240af2c116ea0a6f4e289090f650812c1fa4c770bc5e10e6ec5926efebed9ec95d302620f51aa5e9443f9c694.json
 
 asset-faucet-bundle:
 	rm -rf ${shell pwd}/cache/asset-faucet/*
@@ -73,6 +73,26 @@ asset-faucet-submit-proposal:
 		--from=${LOCAL_WALLET} --home=${HOME}  --chain-id=${LOCAL_CHAIN_ID} --keyring-backend=test --yes -b block
 
 asset-faucet-submit-core-eval: asset-faucet-install-contract-bundle asset-faucet-install-manifest-bundle asset-faucet-submit-proposal vote
+
+
+# ====================================================     Oracle fakeAtom  =================================================
+
+ASSET-FAUCET-SCRIPT = ${shell pwd}/src/proposals/assetFaucet-script.js
+
+BUNDLE_ID = @cache/price-feed/b1-80e6fe68b299c82c2d26802c312bc37966a559f7b28f87d058887a79a9db48ad97da2240e71e3f98986071da8fc3c5d02358bec577b17a89cee2b1cb3cd23958.json
+
+
+oracle-install-contract-bundle:
+	${AGD} tx swingset install-bundle ${BUNDLE_ID} \
+		--from=${LOCAL_WALLET} --home=${HOME}  --chain-id=${LOCAL_CHAIN_ID} --keyring-backend=test --gas=$(GAS) --yes -b block
+
+oracle-submit-proposal:
+	${AGD} tx gov submit-proposal swingset-core-eval add-stATOM-oracles-permit.json add-stATOM-oracles.js \
+		--title="Enable oracle" --description="Evaluate add-stATOM-oracles.js" --deposit=1000000ubld \
+		--gas=auto --gas-adjustment=$(GAS_ADJUSTMENT) \
+		--from=${LOCAL_WALLET} --home=${HOME}  --chain-id=${LOCAL_CHAIN_ID} --keyring-backend=test --yes -b block
+
+oracle-submit-core-eval: oracle-install-contract-bundle oracle-submit-proposal vote
 
 
 # ====================================================     Price Feed  =================================================

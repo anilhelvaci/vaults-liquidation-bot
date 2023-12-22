@@ -1,0 +1,674 @@
+{
+  "bundleFileName": "bundle-fluxAggregatorKit.js",
+  "bundleTime": "2023-12-22T15:51:17.643Z",
+  "moduleSource": {
+    "relative": "../../../../../../agoric-sdk/packages/inter-protocol/src/price/fluxAggregatorContract.js",
+    "absolute": "/Users/jorgelopes/Documents/GitHub/Agoric/agoric-sdk/packages/inter-protocol/src/price/fluxAggregatorContract.js"
+  },
+  "contents": [
+    {
+      "relativePath": "",
+      "mtime": "2023-11-21T15:48:37.299Z"
+    },
+    {
+      "relativePath": "../../proposals/utils.js",
+      "mtime": "2023-11-21T15:48:37.302Z"
+    },
+    {
+      "relativePath": "../fluxAggregatorKit.js",
+      "mtime": "2023-11-21T15:48:37.300Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/index.js",
+      "mtime": "2023-11-21T15:48:09.441Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/index.js",
+      "mtime": "2023-11-21T15:48:37.286Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/index.js",
+      "mtime": "2023-11-21T15:48:09.730Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/index.js",
+      "mtime": "2023-11-21T15:48:09.740Z"
+    },
+    {
+      "relativePath": "../../../../store/src/index.js",
+      "mtime": "2023-11-21T15:48:37.351Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/durability.js",
+      "mtime": "2023-11-21T15:48:37.440Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/recorder.js",
+      "mtime": "2023-11-21T15:48:37.442Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/eventual-send/src/no-shim.js",
+      "mtime": "2023-05-03T14:53:06.008Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/far/src/index.js",
+      "mtime": "2023-05-03T14:53:07.091Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/amountMath.js",
+      "mtime": "2023-11-21T15:48:37.190Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/issuerKit.js",
+      "mtime": "2023-11-21T15:48:37.190Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/typeGuards.js",
+      "mtime": "2023-11-21T15:48:37.192Z"
+    },
+    {
+      "relativePath": "../priceOracleKit.js",
+      "mtime": "2023-11-21T15:48:37.300Z"
+    },
+    {
+      "relativePath": "../roundsManager.js",
+      "mtime": "2023-11-21T15:48:37.300Z"
+    },
+    {
+      "relativePath": "../../../../vat-data/src/index.js",
+      "mtime": "2023-11-21T15:48:37.392Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/index.js",
+      "mtime": "2023-11-21T15:48:09.883Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/index.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/constants.js",
+      "mtime": "2023-11-21T15:48:09.678Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernance/governParam.js",
+      "mtime": "2023-11-21T15:48:09.679Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernance/paramManager.js",
+      "mtime": "2023-11-21T15:48:37.285Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernance/typedParamManager.js",
+      "mtime": "2023-11-21T15:48:09.680Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernor.js",
+      "mtime": "2023-11-21T15:48:37.285Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractHelper.js",
+      "mtime": "2023-11-21T15:48:37.286Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/question.js",
+      "mtime": "2023-11-21T15:48:09.682Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/types-ambient.js",
+      "mtime": "2023-11-21T15:48:37.287Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/validators.js",
+      "mtime": "2023-11-21T15:48:37.287Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/exported.js",
+      "mtime": "2023-11-21T15:48:09.438Z"
+    },
+    {
+      "relativePath": "../../../../SwingSet/src/vats/network/types.js",
+      "mtime": "2023-11-21T15:48:37.219Z"
+    },
+    {
+      "relativePath": "../../../../zoe/exported.js",
+      "mtime": "2023-11-21T15:48:37.437Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/config.js",
+      "mtime": "2023-11-21T15:48:09.730Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/debug.js",
+      "mtime": "2023-11-21T15:48:09.730Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/method-tools.js",
+      "mtime": "2023-11-21T15:48:37.328Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/typeGuards.js",
+      "mtime": "2023-11-21T15:48:37.329Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/utils.js",
+      "mtime": "2023-11-21T15:48:09.734Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/asyncIterableAdaptor.js",
+      "mtime": "2023-11-21T15:48:09.740Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/notifier.js",
+      "mtime": "2023-11-21T15:48:09.740Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/publish-kit.js",
+      "mtime": "2023-11-21T15:48:37.332Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/stored-notifier.js",
+      "mtime": "2023-11-21T15:48:09.741Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/storesub.js",
+      "mtime": "2023-11-21T15:48:37.332Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/subscribe.js",
+      "mtime": "2023-11-21T15:48:37.333Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/subscriber.js",
+      "mtime": "2023-11-21T15:48:09.741Z"
+    },
+    {
+      "relativePath": "../../../../store/src/legacy/legacyMap.js",
+      "mtime": "2023-11-21T15:48:37.351Z"
+    },
+    {
+      "relativePath": "../../../../store/src/legacy/legacyWeakMap.js",
+      "mtime": "2023-11-21T15:48:37.352Z"
+    },
+    {
+      "relativePath": "../../../../store/src/stores/scalarMapStore.js",
+      "mtime": "2023-11-21T15:48:37.352Z"
+    },
+    {
+      "relativePath": "../../../../store/src/stores/scalarSetStore.js",
+      "mtime": "2023-11-21T15:48:37.352Z"
+    },
+    {
+      "relativePath": "../../../../store/src/stores/scalarWeakMapStore.js",
+      "mtime": "2023-11-21T15:48:37.352Z"
+    },
+    {
+      "relativePath": "../../../../store/src/stores/scalarWeakSetStore.js",
+      "mtime": "2023-11-21T15:48:37.352Z"
+    },
+    {
+      "relativePath": "../../../../store/src/stores/store-utils.js",
+      "mtime": "2023-11-21T15:48:37.353Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/exo/index.js",
+      "mtime": "2023-05-03T14:53:06.007Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/index.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../assert/src/assert.js",
+      "mtime": "2023-11-21T15:48:37.257Z"
+    },
+    {
+      "relativePath": "../../../../notifier/tools/testSupports.js",
+      "mtime": "2023-11-21T15:48:09.744Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/eventual-send/src/E.js",
+      "mtime": "2023-05-03T14:53:06.008Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/index.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/mathHelpers/copyBagMathHelpers.js",
+      "mtime": "2023-11-21T15:48:37.191Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/mathHelpers/copySetMathHelpers.js",
+      "mtime": "2023-11-21T15:48:37.191Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/mathHelpers/natMathHelpers.js",
+      "mtime": "2023-11-21T15:48:37.191Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/mathHelpers/setMathHelpers.js",
+      "mtime": "2023-11-21T15:48:09.445Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/displayInfo.js",
+      "mtime": "2023-11-21T15:48:09.441Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/paymentLedger.js",
+      "mtime": "2023-11-21T15:48:37.191Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/types-ambient.js",
+      "mtime": "2023-11-21T15:48:37.192Z"
+    },
+    {
+      "relativePath": "../../typeGuards.js",
+      "mtime": "2023-11-21T15:48:37.303Z"
+    },
+    {
+      "relativePath": "../../../../time/index.js",
+      "mtime": "2023-11-21T15:48:09.836Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/nat/src/index.js",
+      "mtime": "2023-05-03T14:53:05.999Z"
+    },
+    {
+      "relativePath": "../../../../vat-data/src/exo-utils.js",
+      "mtime": "2023-11-21T15:48:37.392Z"
+    },
+    {
+      "relativePath": "../../../../vat-data/src/vat-data-bindings.js",
+      "mtime": "2023-11-21T15:48:37.393Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/atomicTransfer.js",
+      "mtime": "2023-11-21T15:48:37.440Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/bondingCurves.js",
+      "mtime": "2023-11-21T15:48:37.440Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/priceAuthority.js",
+      "mtime": "2023-11-21T15:48:37.441Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/priceQuote.js",
+      "mtime": "2023-11-21T15:48:09.884Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/ratio.js",
+      "mtime": "2023-11-21T15:48:37.442Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/safeMath.js",
+      "mtime": "2023-11-21T15:48:09.885Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/stateMachine.js",
+      "mtime": "2023-11-21T15:48:09.885Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/statistics.js",
+      "mtime": "2023-11-21T15:48:09.885Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/topics.js",
+      "mtime": "2023-11-21T15:48:09.885Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/zoeHelpers.js",
+      "mtime": "2023-11-21T15:48:37.442Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/deeplyFulfilled.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/encodePassable.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/encodeToCapData.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/marshal-justin.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/marshal-stringify.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/marshal.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/rankOrder.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/types.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/typeGuards.js",
+      "mtime": "2023-11-21T15:48:09.683Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernance/assertions.js",
+      "mtime": "2023-11-21T15:48:09.679Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/cleanProposal.js",
+      "mtime": "2023-11-21T15:48:37.438Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernorKit.js",
+      "mtime": "2023-12-12T14:10:19.426Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/makeHandle.js",
+      "mtime": "2023-11-21T15:48:09.892Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractFacet/types.js",
+      "mtime": "2023-11-21T15:48:37.439Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractSupport/types.js",
+      "mtime": "2023-11-21T15:48:09.885Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contracts/exported.js",
+      "mtime": "2023-11-21T15:48:37.445Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/types.js",
+      "mtime": "2023-11-21T15:48:09.893Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/zoeService/types.js",
+      "mtime": "2023-11-21T15:48:09.895Z"
+    },
+    {
+      "relativePath": "../../../../zoe/tools/types-ambient.js",
+      "mtime": "2023-11-21T15:48:09.922Z"
+    },
+    {
+      "relativePath": "../../../../notifier/exported.js",
+      "mtime": "2023-11-21T15:48:09.740Z"
+    },
+    {
+      "relativePath": "../../../../store/exported.js",
+      "mtime": "2023-11-21T15:48:09.769Z"
+    },
+    {
+      "relativePath": "../../../../SwingSet/exported.js",
+      "mtime": "2023-11-21T15:48:09.495Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/promise-kit/index.js",
+      "mtime": "2023-05-03T14:53:07.638Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/stream/index.js",
+      "mtime": "2023-05-05T09:54:06.423Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/jessie.js/src/main.js",
+      "mtime": "2023-01-03T10:27:56.712Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/types-ambient.js",
+      "mtime": "2023-11-21T15:48:09.742Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/lib-chainStorage.js",
+      "mtime": "2023-11-21T15:48:37.328Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/upgrade-api.js",
+      "mtime": "2023-11-21T15:48:09.734Z"
+    },
+    {
+      "relativePath": "../../../../notifier/src/topic.js",
+      "mtime": "2023-11-21T15:48:09.741Z"
+    },
+    {
+      "relativePath": "../../../../store/src/types.js",
+      "mtime": "2023-11-21T15:48:37.353Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/exo/src/exo-makers.js",
+      "mtime": "2023-05-03T14:53:06.007Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/keys/checkKey.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/keys/compareKeys.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/keys/copyBag.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/keys/copySet.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/keys/merge-bag-operators.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/keys/merge-set-operators.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/patterns/patternMatchers.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/types.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/patterns/src/utils.js",
+      "mtime": "2023-05-03T14:53:06.005Z"
+    },
+    {
+      "relativePath": "../../../../assert/src/types.js",
+      "mtime": "2023-11-21T15:48:09.597Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/testing-utils.js",
+      "mtime": "2023-11-21T15:48:09.733Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/eventual-send/src/track-turns.js",
+      "mtime": "2023-05-03T14:53:06.008Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/error.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/iter-helpers.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/make-far.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/makeTagged.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/passStyle-helpers.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/passStyleOf.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/remotable.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/symbol.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/typeGuards.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/types.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/payment.js",
+      "mtime": "2023-11-21T15:48:37.191Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/purse.js",
+      "mtime": "2023-11-21T15:48:37.192Z"
+    },
+    {
+      "relativePath": "../../../../time/src/timeMath.js",
+      "mtime": "2023-11-21T15:48:37.385Z"
+    },
+    {
+      "relativePath": "../../../../time/src/typeGuards.js",
+      "mtime": "2023-11-21T15:48:37.385Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractFacet/rightsConservation.js",
+      "mtime": "2023-11-21T15:48:09.882Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/typeGuards.js",
+      "mtime": "2023-11-21T15:48:37.448Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contractFacet/offerSafety.js",
+      "mtime": "2023-11-21T15:48:09.881Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/marshal/src/encodeToSmallcaps.js",
+      "mtime": "2023-05-03T14:53:07.582Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/internal-types.js",
+      "mtime": "2023-11-21T15:48:37.447Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/objArrayConversion.js",
+      "mtime": "2023-11-21T15:48:09.892Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernance/governApi.js",
+      "mtime": "2023-11-21T15:48:09.679Z"
+    },
+    {
+      "relativePath": "../../../../governance/src/contractGovernance/governFilter.js",
+      "mtime": "2023-11-21T15:48:09.679Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contracts/callSpread/types.js",
+      "mtime": "2023-11-21T15:48:09.888Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contracts/loan/types.js",
+      "mtime": "2023-11-21T15:48:37.446Z"
+    },
+    {
+      "relativePath": "../../../../zoe/src/contracts/types.js",
+      "mtime": "2023-11-21T15:48:09.891Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/promise-kit/src/is-promise.js",
+      "mtime": "2023-05-03T14:53:07.638Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/promise-kit/src/memo-race.js",
+      "mtime": "2023-05-03T14:53:07.638Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/promise-kit/src/promise-executor-kit.js",
+      "mtime": "2023-05-03T14:53:07.638Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/promise-kit/src/types.js",
+      "mtime": "2023-05-03T14:53:07.638Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/jessie.js/src/ring0/main.js",
+      "mtime": "2023-01-03T10:27:56.712Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/jessie.js/src/ring1/main.js",
+      "mtime": "2023-01-03T10:27:56.712Z"
+    },
+    {
+      "relativePath": "../../../../internal/src/callback.js",
+      "mtime": "2023-11-21T15:48:37.328Z"
+    },
+    {
+      "relativePath": "../../../../zone/src/index.js",
+      "mtime": "2023-11-21T15:48:37.479Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/exo/src/exo-tools.js",
+      "mtime": "2023-05-03T14:53:06.007Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/copyArray.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/copyRecord.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/safe-promise.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/@endo/pass-style/src/tagged.js",
+      "mtime": "2023-05-03T14:53:06.006Z"
+    },
+    {
+      "relativePath": "../../../../ERTP/src/transientNotifier.js",
+      "mtime": "2023-11-21T15:48:09.447Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/jessie.js/src/ring0/E.js",
+      "mtime": "2023-01-03T10:27:56.712Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/jessie.js/src/ring0/async-generate.js",
+      "mtime": "2023-01-03T10:27:56.712Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/jessie.js/src/ring0/makers.js",
+      "mtime": "2023-01-03T10:27:56.712Z"
+    },
+    {
+      "relativePath": "../../../../../node_modules/jessie.js/src/ring1/async-tools.js",
+      "mtime": "2023-01-03T10:27:56.712Z"
+    },
+    {
+      "relativePath": "../../../../zone/src/heap.js",
+      "mtime": "2023-11-21T15:48:37.478Z"
+    }
+  ]
+}
