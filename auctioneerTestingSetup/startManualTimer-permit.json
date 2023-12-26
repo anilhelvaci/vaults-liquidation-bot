@@ -5,17 +5,19 @@
     "vatAdminSvc": "makeCoreProposalBehavior"
   },
   "produce": {
-    "manualTimerFaucetKit": true
+    "manualTimerKit": true
   },
   "installation": {
     "consume": {
-      "manualTimerFaucetInstallation": true
+      "manualTimerInstallation": true
     },
-    "produce": "makeCoreProposalBehavior"
+    "produce": {
+      "manualTimerInstallation": true
+    }
   },
   "instance": {
     "produce": {
-      "manualTimerFaucetInstance": true
+      "manualTimerInstanceNew": true
     }
   },
   "evaluateBundleCap": "makeCoreProposalBehavior",

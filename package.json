@@ -21,6 +21,7 @@
     "@agoric/zoe": "^0.26.3-u11wf.0",
     "@agoric/smart-wallet": "^0.5.4-u11wf.0",
     "@agoric/rpc": "0.6.0",
+    "@agoric/time": "dev",
     "@agoric/internal": "0.4.0-u12.0",
     "@agoric/ertp": "0.16.3-u12.0",
     "@agoric/inter-protocol": "0.16.2-u12.0",

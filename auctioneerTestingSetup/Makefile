@@ -1,4 +1,4 @@
-SDK_ROOT = $(shell cd ../../../agoric-sdk >/dev/null && pwd)
+SDK_ROOT = $(shell cd ../../agoric-11-wf >/dev/null && pwd)
 AGORIC = $(SDK_ROOT)/packages/agoric-cli/bin/agoric
 AGD = $(SDK_ROOT)/bin/agd
 LOCAL_CHAIN_ID = agoriclocal
