@@ -3,8 +3,8 @@ import { makeImportContext } from '@agoric/smart-wallet/src/marshal-contexts.js'
 import { setAuctionBrands } from './helpers.js';
 import { StateManagerKeys } from './constants.js';
 
-const makeAuctionWatcher = bookId => {
-    const leader = makeLeader('https://devnet.agoric.net/network-config');
+const makeAuctionWatcher = (bookId, networkConfig) => {
+    const leader = makeLeader(networkConfig);
     const { fromBoard: marshaller } = makeImportContext();
     const options = harden({
         unserializer: marshaller,
