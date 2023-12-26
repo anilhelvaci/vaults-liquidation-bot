@@ -5,7 +5,7 @@
     "priceAuthority": true,
     "chainStorage": true,
     "economicCommitteeCreatorFacet": true,
-    "manualTimerFaucetKit": true,
+    "manualTimerKit": true,
     "agoricNamesAdmin": "makeCoreProposalBehavior",
     "vatAdminSvc": "makeCoreProposalBehavior"
   },
