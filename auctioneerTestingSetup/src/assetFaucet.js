@@ -1,20 +1,21 @@
-import { AmountMath } from '@agoric/ertp';
-import { Far } from '@endo/marshal';
+import { Far } from '@endo/far';
 
 /** @type {ContractStartFn} */
 const start = async (zcf) => {
   const { keyword, assetKind, displayInfo } = zcf.getTerms();
 
   const mint = await zcf.makeZCFMint(keyword, assetKind, displayInfo);
-  const { issuer, brand } = mint.getIssuerRecord();
+  const { issuer } = mint.getIssuerRecord();
 
-  const mintHook = async (userSeat, offerArgs) => {
-    const { value } = offerArgs;
-    const mintAmount = AmountMath.make(brand, value);
-    mint.mintGains(harden({ [keyword]: mintAmount }), userSeat);
+  const mintHook = async (userSeat) => {
+    const {
+      want: { [keyword]: wantedAmount },
+    } = userSeat.getProposal();
+
+    mint.mintGains(harden({ [keyword]: wantedAmount }), userSeat);
 
     userSeat.exit();
-    return `An amount of ${value} ${keyword} was sent to your wallet.`;
+    return 'your offer was successful';
   };
 
   const makeMintInvitation = () => {
@@ -31,5 +32,6 @@ const start = async (zcf) => {
 
   return harden({ creatorFacet, publicFacet });
 };
+
 harden(start);
 export { start };

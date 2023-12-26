@@ -10,6 +10,8 @@ import { makeBidManager } from '../../src/bidManager.js';
 import { headValue } from '@agoric/smart-wallet/test/supports.js';
 import { makeRatioFromAmounts } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { E } from '@endo/far';
+import fs from 'fs';
+import { eventLoopIteration } from '@agoric/internal/src/testing-utils.js';
 
 const BIDDER_ADDRESS = 'agoricBidder';
 const BASE_POINTS = 10_000n;
@@ -83,6 +85,39 @@ test.serial('placed-bid-throws', async t => {
         price: makeRatioFromAmounts(suite.makeBid(350n), suite.makeCollateral(300n)),
     });
     await t.throwsAsync(Promise.all(states));
+});
+
+test.serial('placed-bid-cancel', async t => {
+    const suite = makeTestSuite(t.context);
+    const { utils } = await suite.initWorld({ bidderAddress: BIDDER_ADDRESS, startPriceVal: 1_100_000n, depositColValue: 10n });
+
+    await suite.advanceTo(170n); // Start next auction
+
+    const { bidManager } = makeMockArbitrager(suite, utils);
+
+    const { offerId } = bidManager.placeBid({
+        bidAmount: suite.makeBid(350n),
+        maxColAmount: suite.makeCollateral(300n),
+        price: makeRatioFromAmounts(suite.makeBid(250n), suite.makeCollateral(300n)),
+    });
+    await eventLoopIteration();
+
+    // Alice then decides to cancel her bid
+    await t.notThrowsAsync(bidManager.cancelBid(offerId));
+
+    // Check Alice gets refunded
+    const walletState = await headValue(utils.updateSub);
+    t.like(walletState, {
+        updated: 'offerStatus',
+        status: {
+            id: offerId,
+            numWantsSatisfied: 1,
+            result: 'Your bid has been accepted',
+            payouts: {
+                Bid: suite.makeBid(350n),
+            },
+        },
+    });
 });
 
 test.serial('arb-manager', async t => {
@@ -190,5 +225,10 @@ test.serial('arb-manager-cannot-fetch-external', async t => {
     });
 
     const bidLog = arbitrageManager.getBidLog();
-    await Promise.all([...bidLog].map(bid => t.throwsAsync(bid)));
+    (await Promise.all([...bidLog])).map(bid =>
+        t.deepEqual(bid, {
+            msg: 'Error when fetching market price',
+            data: new Error('MockReject'),
+        }),
+    );
 });

@@ -65,7 +65,7 @@ export const initAuctioneer = async (powers) => {
   const timerBrand = await E(manualTimer).getTimerBrand();
 
   const marshaller = await E(board).getPublishingMarshaller();
-  const storageNode = await E(chainStorage).makeChildNode('fakeAuction');
+  const storageNode = await E(chainStorage).makeChildNode('fakeAuctioneer');
 
   const reservePublicFacet = await E(zoe).getPublicFacet(reserveInstance);
 
