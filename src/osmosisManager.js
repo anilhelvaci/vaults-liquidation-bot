@@ -13,14 +13,14 @@ const createSigner = async () => {
     console.log(testnet.apis.rpc);
 
     const accounts = await signer.getAccounts();
-    return harden({...signer, accounts});
+    return harden({ ...signer, accounts });
 };
 
 const createClient = async () => {
     const signer = await createSigner();
     const client = await getSigningOsmosisClient({
         rpcEndpoint: testnet.apis.rpc[0].address,
-        signer
+        signer,
     });
 
     return harden({ signer, client });

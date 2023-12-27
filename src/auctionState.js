@@ -1,7 +1,11 @@
 import { assert } from '@agoric/assert';
 import { StateManagerKeys } from './constants.js';
 import { makeCreditManager } from './helpers.js';
-import { makeScalarBigMapStore } from '@agoric/vat-data';
+import { makeFakeVirtualStuff } from '@agoric/swingset-liveslots/tools/fakeVirtualSupport.js';
+
+const {
+    cm: { makeScalarBigMapStore },
+} = makeFakeVirtualStuff();
 
 const makeAuctionStateManager = arbConfig => {
     const state = {
@@ -51,6 +55,11 @@ const makeAuctionStateManager = arbConfig => {
             numerator: { brand: bidBrand },
             denominator: { brand: colBrand },
         } = data.currentPriceLevel;
+
+        console.log('[tryInit]', {
+            bidBrand,
+            colBrand,
+        });
 
         state[StateManagerKeys.BID_BRAND] = bidBrand;
         state[StateManagerKeys.COLLATERAL_BRAND] = colBrand;

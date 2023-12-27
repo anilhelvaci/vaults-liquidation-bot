@@ -1,14 +1,14 @@
 import { makeTransactionSender } from './transactionSender.js';
 
-const makeBidManager = (offerSender = makeTransactionSender()) => {
+const makeBidManager = (offerSender = makeTransactionSender(), instance = 'auctioneer') => {
     let count = 0;
 
     const placeBid = ({ bidAmount, maxColAmount, price, minColAmount }) => {
         const offerSpec = {
-            id: `place-bid-${count}`,
+            id: `place-bid-${count}-${Date.now()}`,
             invitationSpec: {
                 source: 'agoricContract',
-                instancePath: ['auctioneer'],
+                instancePath: [instance],
                 callPipe: [['makeBidInvitation', [maxColAmount.brand]]],
             },
             proposal: {

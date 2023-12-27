@@ -3,7 +3,11 @@ import { MILI_SEC, RETRY_LIMIT, StateManagerKeys } from './constants.js';
 import { mustMatch } from '@endo/patterns';
 import { DELTA_SHAPE } from './typeGuards.js';
 import { ratioGTE } from '@agoric/zoe/src/contractSupport/ratio.js';
-import { makeScalarBigMapStore } from '@agoric/vat-data';
+import { makeFakeVirtualStuff } from '@agoric/swingset-liveslots/tools/fakeVirtualSupport.js';
+
+const {
+    cm: { makeScalarBigMapStore },
+} = makeFakeVirtualStuff();
 
 /**
  *
