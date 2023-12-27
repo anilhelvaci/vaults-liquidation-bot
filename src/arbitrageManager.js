@@ -18,7 +18,7 @@ const {
  * @param {(Object) => Promise} finish
  * @return {{getBidLog: (function(): *[]), onStateUpdate: onStateUpdate}}
  */
-const makeArbitrageManager = ({ getAuctionState, externalManager, bidManager, arbConfig, finish }) => {
+const makeArbitrageManager = ({ getAuctionState, externalManager, bidManager, arbConfig, finish, onBid }) => {
     const bidLog = [];
     const externalLog = [];
     const bidHistory = makeScalarBigMapStore('Bid History');
@@ -107,7 +107,7 @@ const makeArbitrageManager = ({ getAuctionState, externalManager, bidManager, ar
             const bidUtils = calculateBidUtils(stateSnapshot, worstDesiredPrice, harden(arbConfig));
             if (!creditManager.checkEnoughBalance(bidUtils.bidAmount)) {
                 isAcceptingUpdates = false;
-                finish(stateSnapshot);
+                finish(() => [...bidLog]);
                 return harden({
                     msg: 'Insufficient credit',
                     data: { bidUtils, credit: creditManager.getCredit() },
@@ -120,8 +120,9 @@ const makeArbitrageManager = ({ getAuctionState, externalManager, bidManager, ar
                     data: { currentBid: bidHistory.get(currentPriceLevel.numerator.value) },
                 });
 
-            const { offerId } = bidManager.placeBid(bidUtils);
+            const { offerId, states } = bidManager.placeBid(bidUtils);
             bidHistory.set(currentPriceLevel.numerator.value, harden({ offerId, state: 'pending' }));
+            onBid(states);
             return harden({
                 msg: 'Bid Placed',
                 data: {
@@ -218,7 +219,7 @@ const makeArbitrageManager = ({ getAuctionState, externalManager, bidManager, ar
 
         if (!bidData.offerId) return true;
         if (bidData.state === 'error') return true; // Go ahead and bid
-
+        console.log('[BID_DATA]', bidData);
         return false;
     };
 

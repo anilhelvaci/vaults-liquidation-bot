@@ -4,14 +4,14 @@ import { makeAuctionStateManager } from '../../src/auctionState.js';
 import { makeBidManager } from '../../src/bidManager.js';
 import { makeArbitrageManager } from '../../src/arbitrageManager.js';
 import { makeTransactionSender } from '../../src/transactionSender.js';
-import { bigIntReplacer, makeSmokeTestExternalManager } from './tools.js';
+import { bigIntReplacer, getLatestBlockHeight, makeSmokeTestExternalManager, makeWalletWatchTrigger } from './tools.js';
 import strategyConfig from './test.strategy.config.js';
 
 const main = async () => {
     const networkConfig = 'https://wallet.agoric.app/wallet/network-config';
     const configIndex = process.env.CONFIG || 0;
     const config = strategyConfig.strategies[configIndex];
-    const { watch, marshaller } = makeAuctionWatcher({
+    const { watch, marshaller, watchSmartWallet } = makeAuctionWatcher({
         networkConfig,
         bookId: config.bookId,
         auctioneerPath: 'fakeAuctioneer',
@@ -25,6 +25,7 @@ const main = async () => {
     });
     const bidManager = makeBidManager(offerSender, 'fakeAuctioneer');
     const externalManager = makeSmokeTestExternalManager(stateManager.getState);
+    const { triggerWatch } = makeWalletWatchTrigger(watchSmartWallet);
 
     const finish = async getBidLog => {
         const bidLogP = getBidLog();
@@ -38,6 +39,7 @@ const main = async () => {
         bidManager,
         arbConfig: harden(config),
         finish,
+        onBid: triggerWatch,
     });
 
     const notify = (type, data) => {

@@ -29,7 +29,7 @@ export default harden({
         {
             delta: {
                 type: 'exact',
-                value: 300000n, // 0.3 IST
+                value: 500000n, // 0.3 IST
             },
             spend: {
                 type: 'controlled',
@@ -58,13 +58,13 @@ export default harden({
         {
             delta: {
                 type: 'percentage',
-                value: 5n, // 5% off from the external price
+                value: 3n, // 3% off from the external price
             },
             spend: {
                 type: 'controlled',
-                controlFactor: 10n, // amountIn = credit / controlFactor
+                controlFactor: 2n, // amountIn = credit / controlFactor
             },
-            credit: 100_000_000n, // 100 IST credit
+            credit: 30_000_000n, // 30 IST credit
             collateralName: 'FakeATOM',
             bookId: 0,
             retryInterval: 30 * 1000, // 30 seconds in ms

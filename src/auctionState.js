@@ -71,6 +71,9 @@ const makeAuctionStateManager = arbConfig => {
 
         const { creditManager } = state;
         const { status, updated } = data;
+        console.log('[STATUS]', {
+            status,
+        });
 
         if (updated === 'balance') return;
 
