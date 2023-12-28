@@ -14,7 +14,7 @@ const makeBidManager = (offerSender, instance = 'auctioneer') => {
             minColAmount,
         });
         const offerSpec = {
-            id: `place-bid-${count}-${Date.now()}`,
+            id: `place-bid-${count}`,
             invitationSpec: {
                 source: 'agoricContract',
                 instancePath: [instance],

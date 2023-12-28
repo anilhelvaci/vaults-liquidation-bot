@@ -89,7 +89,7 @@ const makeAuctionStateManager = arbConfig => {
             if (!excessBidAmount) return;
             trace('handleWalletUpdate', 'incrementCredit by', excessBidAmount);
             creditManager.incrementCredit(excessBidAmount);
-        } else {
+        } else if (!status.payouts && !status.numWantsSatisfied) {
             const {
                 give: { Bid: paidBidAmount },
             } = status.proposal;
