@@ -2,7 +2,7 @@ import { assert } from '@agoric/assert';
 import { StateManagerKeys } from './constants.js';
 import { makeCreditManager } from './helpers.js';
 import { makeFakeVirtualStuff } from '@agoric/swingset-liveslots/tools/fakeVirtualSupport.js';
-import { makeTracer } from '../../agoric-11-wf/packages/internal/src/index.js';
+import { makeTracer } from '@agoric/internal/src/index.js';
 
 const {
     cm: { makeScalarBigMapStore },
