@@ -1,9 +1,18 @@
-import { makeTransactionSender } from './transactionSender.js';
+import { makeTracer } from '@agoric/internal/src/index.js';
 
-const makeBidManager = (offerSender = makeTransactionSender(), instance = 'auctioneer') => {
+const trace = makeTracer('TransactionSender', true);
+
+const makeBidManager = (offerSender, instance = 'auctioneer') => {
     let count = 0;
+    trace('makeBidManager', instance);
 
     const placeBid = ({ bidAmount, maxColAmount, price, minColAmount }) => {
+        trace('placeBid', {
+            bidAmount,
+            maxColAmount,
+            price,
+            minColAmount,
+        });
         const offerSpec = {
             id: `place-bid-${count}-${Date.now()}`,
             invitationSpec: {
@@ -36,6 +45,9 @@ const makeBidManager = (offerSender = makeTransactionSender(), instance = 'aucti
     };
 
     const cancelBid = offerId => {
+        trace('cancelBid', {
+            offerId,
+        });
         return offerSender.cancel(offerId);
     };
 

@@ -20,7 +20,7 @@ export default harden({
             spend: {
                 type: 'flash',
             },
-            credit: 50_000_000n, // 50 IST credit
+            credit: 100_000_000n, // 100 IST credit
             collateralName: 'FakeATOM',
             bookId: 0,
             retryInterval: 30 * 1000, // 30 seconds in ms
@@ -62,9 +62,9 @@ export default harden({
             },
             spend: {
                 type: 'controlled',
-                controlFactor: 2n, // amountIn = credit / controlFactor
+                controlFactor: 10n, // amountIn = credit / controlFactor
             },
-            credit: 30_000_000n, // 30 IST credit
+            credit: 1000_000_000n, // 1000 IST credit
             collateralName: 'FakeATOM',
             bookId: 0,
             retryInterval: 30 * 1000, // 30 seconds in ms

@@ -1,6 +1,10 @@
 import { makeLeader, makeCastingSpec, makeFollower, iterateLatest, iterateEach } from '@agoric/casting';
+import { makeTracer } from '@agoric/internal';
 import { makeImportContext } from '@agoric/smart-wallet/src/marshal-contexts.js';
 import { StateManagerKeys } from './constants.js';
+import { setBookState } from './helpers.js';
+
+const trace = makeTracer('AuctionWatcher', true);
 
 const makeAuctionWatcher = ({ networkConfig, bookId, auctioneerPath = 'auctioneer', address }) => {
     const leader = makeLeader(networkConfig);
@@ -31,7 +35,7 @@ const makeAuctionWatcher = ({ networkConfig, bookId, auctioneerPath = 'auctionee
 
     const watchBook = async () => {
         for await (const { value: book } of iterateLatest(bookFollower)) {
-            notify(StateManagerKeys.BOOK_STATE, book);
+            setBookState(notify, book);
         }
     };
 
@@ -42,6 +46,7 @@ const makeAuctionWatcher = ({ networkConfig, bookId, auctioneerPath = 'auctionee
     };
 
     const watchSmartWallet = async height => {
+        trace('Watching smart wallet at height: ', height);
         for await (const { value: walletUpdate } of iterateEach(smartWalletFollower, { height })) {
             notify(StateManagerKeys.WALLET_UPDATE, walletUpdate);
         }

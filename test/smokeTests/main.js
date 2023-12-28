@@ -4,7 +4,7 @@ import { makeAuctionStateManager } from '../../src/auctionState.js';
 import { makeBidManager } from '../../src/bidManager.js';
 import { makeArbitrageManager } from '../../src/arbitrageManager.js';
 import { makeTransactionSender } from '../../src/transactionSender.js';
-import { bigIntReplacer, getLatestBlockHeight, makeSmokeTestExternalManager, makeWalletWatchTrigger } from './tools.js';
+import { bigIntReplacer, makeSmokeTestExternalManager, makeWalletWatchTrigger } from './tools.js';
 import strategyConfig from './test.strategy.config.js';
 
 const main = async () => {

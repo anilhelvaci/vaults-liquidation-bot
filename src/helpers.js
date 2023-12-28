@@ -23,16 +23,6 @@ const getBrandsFromBook = bookState => {
     });
 };
 
-const setAuctionBrands = (brands, setter) => {
-    const { collateralName } = getConfig();
-
-    [...brands].forEach(([name, brand]) => {
-        if (name === BID_BRAND_NAME) setter(StateManagerKeys.BID_BRAND, brand);
-        if (name === collateralName) setter(StateManagerKeys.COLLATERAL_BRAND, brand);
-    });
-};
-harden(setAuctionBrands);
-
 /**
  * @param {{type: string, value: bigint}} delta
  * @param state
@@ -177,7 +167,6 @@ harden(makeCreditManager);
 export {
     getConfig,
     getBrandsFromBook,
-    setAuctionBrands,
     calculateDPPercentageDelta,
     calculateDPExactDelta,
     calculateBidUtils,

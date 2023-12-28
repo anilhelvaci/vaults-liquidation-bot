@@ -5,6 +5,9 @@
 
 import { execFileSync } from 'child_process';
 import { pollTx } from '../_agstate/yarn-links/agoric/src/lib/chain.js';
+import { makeTracer } from '@agoric/internal/src/index.js';
+
+const trace = makeTracer('TransactionSender', true);
 
 const agdBin = 'agd';
 const sleep = ms => new Promise(res => setTimeout(res, ms));
@@ -41,7 +44,7 @@ const agd = {
 };
 
 const execute = (args, options = {}) => {
-    console.log('Executing: ', args);
+    trace('Executing', args);
     return execFileSync(agdBin, args, { encoding: 'utf-8', ...options });
 };
 
@@ -61,8 +64,10 @@ const makeTransactionSender = async ({ networkConfig, marshaller, from }) => {
         chainName,
         rpcAddrs: [rpc],
     } = await result.json();
+    trace('makeTransactionSender', chainName, rpc);
 
     const send = offerSpec => {
+        trace('send', offerSpec);
         const spendAction = {
             method: 'executeOffer',
             offer: offerSpec,
@@ -73,6 +78,7 @@ const makeTransactionSender = async ({ networkConfig, marshaller, from }) => {
     };
 
     const cancel = offerId => {
+        trace('cancel', offerId);
         const spendAction = {
             method: 'tryExitOffer',
             offerId,
