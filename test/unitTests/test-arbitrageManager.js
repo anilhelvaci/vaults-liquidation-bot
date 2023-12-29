@@ -42,6 +42,7 @@ test.beforeEach(t => {
         bidManager,
         arbConfig: config,
         finish: async () => console.log('Dummy'),
+        onBid: async () => console.log('Dummy'),
     });
 
     const notify = (key, data) => {
@@ -141,7 +142,6 @@ test.serial('sequential', async t => {
             status: {
                 id: 'place-bid-0',
                 proposal: { give: { Bid: moola.make(100_000_000n) } }, // Flash bid
-                numWantsSatisfied: 1,
                 result: 'Your bid has been accepted',
             },
         }),
