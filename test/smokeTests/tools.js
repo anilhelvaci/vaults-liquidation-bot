@@ -13,11 +13,13 @@ export const makeSmokeTestExternalManager = getState => {
             initialized,
             [StateManagerKeys.BID_BRAND]: bidBrand,
             [StateManagerKeys.COLLATERAL_BRAND]: colBrand,
+            [StateManagerKeys.BOOK_STATE]: { startPrice },
         } = getState();
         trace('fetchExternalPrice', {
             initialized,
             bidBrand,
             colBrand,
+            startPrice,
         });
 
         if (!initialized)
@@ -26,13 +28,11 @@ export const makeSmokeTestExternalManager = getState => {
                 data: { initialized, bidBrand, colBrand },
             });
 
-        // ATOM price on 31-10-2023
-        const mockPrice = makeRatio(7_850_000n, bidBrand, 1_000_000n, colBrand);
-        return Promise.resolve(mockPrice);
+        return Promise.resolve(startPrice);
     };
 
     const sell = async sellUtils => {
-        console.log('Sell called with: ', sellUtils);
+        trace('sell', sellUtils);
 
         return harden({
             msg: 'Sold',

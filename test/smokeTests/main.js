@@ -1,4 +1,5 @@
 import '../../installSesLockdown.js';
+import { writeFileSync } from 'fs';
 import { makeAuctionWatcher } from '../../src/auctionWatcher.js';
 import { makeAuctionStateManager } from '../../src/auctionState.js';
 import { makeBidManager } from '../../src/bidManager.js';
@@ -8,6 +9,7 @@ import { bigIntReplacer, makeSmokeTestExternalManager, makeWalletWatchTrigger } 
 import strategyConfig from './test.strategy.config.js';
 
 const main = async () => {
+    const timestamp = Date.now();
     const networkConfig = 'https://wallet.agoric.app/wallet/network-config';
     const configIndex = process.env.CONFIG || 0;
     const config = strategyConfig.strategies[configIndex];
@@ -52,6 +54,7 @@ const main = async () => {
         promise.catch(err => {
             const errorLog = `Unhandled Rejection at: ${err.stack}, reason: ${reason}`;
             console.error(JSON.stringify(errorLog, bigIntReplacer, 2));
+            writeFileSync(`error-${timestamp}.log`, errorLog, { flag: 'as+' });
         });
     });
 
@@ -61,7 +64,7 @@ const main = async () => {
         console.log({
             logs,
         });
-        console.log(JSON.stringify(logs, bigIntReplacer, 2));
+        writeFileSync(`bids-${timestamp}.log.json`, JSON.stringify(logs, bigIntReplacer, 2));
         process.exit(0);
     });
 };
