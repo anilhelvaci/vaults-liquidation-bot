@@ -71,6 +71,6 @@ const executeRoute = params => {
         })
     }
 }
-// harden(executeRoute);
+harden(executeRoute);
 
 export { executeRoute };

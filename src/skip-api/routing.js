@@ -50,6 +50,6 @@ const getRoute = async params => {
         })
     }
 }
-// harden(getRoute);
+harden(getRoute);
 
 export { getRoute };

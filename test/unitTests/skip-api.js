@@ -1,3 +1,4 @@
+import "../../installSesLockdown.js";
 import test from 'ava';
 import { getRoute } from '../../src/skip-api/routing.js';
 import { executeRoute } from '../../src/skip-api/route-exec.js';

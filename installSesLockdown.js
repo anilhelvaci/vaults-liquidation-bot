@@ -7,6 +7,7 @@ lockdown({
     errorTaming: 'unsafe',
     overrideTaming: 'severe',
     consoleTaming: 'unsafe',
+    domainTaming: "unsafe",
 });
 
 Error.stackTraceLimit = Infinity;

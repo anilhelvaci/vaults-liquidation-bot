@@ -12,7 +12,7 @@ const getChainInfo = (chainId) => {
     const chainInfo = chains.find(chain => chain.chain_id === chainId);
     return chainInfo;
 }
-// harden(getChainInfo);
+harden(getChainInfo);
 
 /**
  * @param {string} chainId 
@@ -21,7 +21,7 @@ const getBech32Prefix = (chainId) => {
     const info = getChainInfo(chainId);
     return info.bech32_prefix;
 }
-// harden(getBech32Prefix);
+harden(getBech32Prefix);
 
 /**
  * @param {string} chainId 
@@ -31,7 +31,7 @@ const getHdWalletPath = (chainId, index = 0) => {
     const info = getChainInfo(chainId);
     return stringToPath(`m/44'/${info.slip44}'/0'/0/${index}`);
 }
-// harden(getHdWalletPath);
+harden(getHdWalletPath);
 
 /**
  * @param {string} chainID
@@ -44,7 +44,7 @@ const getSigner = async (chainID, mnemonic, index = 0) => {
 
     return await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix, hdPaths });
 }
-// harden(getSigner);
+harden(getSigner);
 
 /**
  * @param {DirectSecp256k1HdWallet} wallet 
@@ -53,7 +53,7 @@ const getAddressFromSigner = async (wallet) => {
     const [{ address }] = await wallet.getAccounts();
     return address;
 }
-// harden(getAddressFromSigner);
+harden(getAddressFromSigner);
 
 export {
     getChainInfo,
