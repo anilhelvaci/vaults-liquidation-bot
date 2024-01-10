@@ -1,4 +1,3 @@
-import { makeRatio } from '../../../agoric-11-wf/packages/zoe/src/contractSupport/index.js';
 import { StateManagerKeys } from '../../src/constants.js';
 import { makeTracer } from '@agoric/internal/src/index.js';
 

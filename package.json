@@ -61,5 +61,8 @@
     "bracketSpacing": true,
     "arrowParens": "avoid",
     "endOfLine": "lf"
+  },
+  "resolutions": {
+    "**/@agoric/xsnap": "0.14.3-dev-9f085d3.0"
   }
 }
