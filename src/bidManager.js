@@ -33,7 +33,7 @@ const makeBidManager = (offerSender, instance = 'auctioneer') => {
                     : {}),
             },
             offerArgs: {
-                exitOnBuy: true,
+                exitAfterBuy: true,
                 maxBuy: maxColAmount,
                 offerPrice: price,
             },
