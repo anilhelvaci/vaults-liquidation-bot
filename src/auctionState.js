@@ -78,6 +78,11 @@ const makeAuctionStateManager = arbConfig => {
         const { status, updated } = data;
         trace('handleWalletUpdate - data', status);
 
+        if (!status.id.startsWith('place-bid-')) {
+            trace('handleWalletUpdate', 'Not bot transaction', status.id);
+            return;
+        }
+
         if (updated === 'balance') return;
 
         writeOffer(data);
