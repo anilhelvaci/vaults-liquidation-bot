@@ -1,26 +1,29 @@
-import { makeLeader, makeCastingSpec, makeFollower, iterateLatest } from '@agoric/casting';
+import { makeLeader, makeCastingSpec, makeFollower, iterateLatest, iterateEach } from '@agoric/casting';
+import { makeTracer } from '@agoric/internal';
 import { makeImportContext } from '@agoric/smart-wallet/src/marshal-contexts.js';
-import { setAuctionBrands } from './helpers.js';
 import { StateManagerKeys } from './constants.js';
+import { setBookState } from './helpers.js';
 
-const makeAuctionWatcher = bookId => {
-    const leader = makeLeader('https://devnet.agoric.net/network-config');
+const trace = makeTracer('AuctionWatcher', true);
+
+const makeAuctionWatcher = ({ networkConfig, bookId, auctioneerPath = 'auctioneer', address }) => {
+    const leader = makeLeader(networkConfig);
     const { fromBoard: marshaller } = makeImportContext();
     const options = harden({
         unserializer: marshaller,
     });
 
-    const bookCastingSpec = makeCastingSpec(`:published.auction.book${bookId}`);
+    const bookCastingSpec = makeCastingSpec(`:published.${auctioneerPath}.book${bookId}`);
     const bookFollower = makeFollower(bookCastingSpec, leader, options);
 
-    const governanceCastingSpec = makeCastingSpec(':published.auction.governance');
+    const governanceCastingSpec = makeCastingSpec(`:published.${auctioneerPath}.governance`);
     const governanceFollower = makeFollower(governanceCastingSpec, leader);
 
-    const scheduleCastingSpec = makeCastingSpec(':published.auction.schedule');
+    const scheduleCastingSpec = makeCastingSpec(`:published.${auctioneerPath}.schedule`);
     const scheduleFollower = makeFollower(scheduleCastingSpec, leader, options);
 
-    const brandCastingSpec = makeCastingSpec(':published.agoricNames.brand');
-    const brandFollower = makeFollower(brandCastingSpec, leader, options);
+    const smartWalletCastingSpec = makeCastingSpec(`:published.wallet.${address}`);
+    const smartWalletFollower = makeFollower(smartWalletCastingSpec, leader, options);
 
     let notify;
 
@@ -30,15 +33,9 @@ const makeAuctionWatcher = bookId => {
         }
     };
 
-    const watchBrand = async () => {
-        for await (const { value: brands } of iterateLatest(brandFollower)) {
-            setAuctionBrands(brands, notify);
-        }
-    };
-
     const watchBook = async () => {
         for await (const { value: book } of iterateLatest(bookFollower)) {
-            notify(StateManagerKeys.BOOK_STATE, book);
+            setBookState(notify, book);
         }
     };
 
@@ -48,16 +45,23 @@ const makeAuctionWatcher = bookId => {
         }
     };
 
+    const watchSmartWallet = async height => {
+        trace('Watching smart wallet at height: ', height);
+        for await (const { value: walletUpdate } of iterateEach(smartWalletFollower, { height })) {
+            notify(StateManagerKeys.WALLET_UPDATE, walletUpdate);
+        }
+    };
+
     const watch = notifier => {
         notify = notifier;
         watchSchedule();
-        watchBrand();
         watchBook();
         watchGovernance();
     };
 
     return harden({
         watch,
+        watchSmartWallet,
         marshaller,
     });
 };

@@ -22,6 +22,9 @@
     "@agoric/zoe": "^0.26.3-u11wf.0",
     "@agoric/smart-wallet": "^0.5.4-u11wf.0",
     "@agoric/rpc": "0.6.0",
+    "@agoric/vat-data": "dev",
+    "@agoric/internal": "dev",
+    "@agoric/swingset-liveslots": "dev",
     "@endo/promise-kit": "^0.2.60",
     "@endo/patterns": "^0.2.6",
     "ava": "^5.3.0",
@@ -58,5 +61,8 @@
     "bracketSpacing": true,
     "arrowParens": "avoid",
     "endOfLine": "lf"
+  },
+  "resolutions": {
+    "**/@agoric/xsnap": "0.14.3-dev-9f085d3.0"
   }
 }

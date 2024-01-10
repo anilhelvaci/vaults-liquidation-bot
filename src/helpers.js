@@ -1,11 +1,12 @@
 import strategyConfig from '../strategy.config.js';
 import { assert, details as X } from '@agoric/assert';
-import { BID_BRAND_NAME, StateManagerKeys } from './constants.js';
+import { StateManagerKeys } from './constants.js';
 import { assertIsRatio, makeRatioFromAmounts, floorDivideBy, quantize } from '@agoric/zoe/src/contractSupport/ratio.js';
 import { AmountMath } from '@agoric/ertp/src/amountMath.js';
 import { mustMatch } from '@endo/patterns';
 import { SPEND_TYPE_SHAPE } from './typeGuards.js';
 import { natSafeMath } from '@agoric/zoe/src/contractSupport/safeMath.js';
+import { makeTracer } from '@agoric/internal/src/index.js';
 
 const getConfig = (index = 0) => {
     const strategyIndex = process.env.STRATEGY || index;
@@ -22,16 +23,6 @@ const getBrandsFromBook = bookState => {
         collateralBrand: currentPriceLevel.denominator.brand,
     });
 };
-
-const setAuctionBrands = (brands, setter) => {
-    const { collateralName } = getConfig();
-
-    [...brands].forEach(([name, brand]) => {
-        if (name === BID_BRAND_NAME) setter(StateManagerKeys.BID_BRAND, brand);
-        if (name === collateralName) setter(StateManagerKeys.COLLATERAL_BRAND, brand);
-    });
-};
-harden(setAuctionBrands);
 
 /**
  * @param {{type: string, value: bigint}} delta
@@ -174,14 +165,104 @@ const makeCreditManager = (brand, creditValue) => {
 };
 harden(makeCreditManager);
 
+const getLatestBlockHeight = async networkConfig => {
+    const netConfig = await fetch(networkConfig);
+    const {
+        chainName,
+        rpcAddrs: [rpc],
+    } = await netConfig.json();
+    console.log('netConfig', { chainName, rpc });
+
+    const block = await fetch(`${rpc}/block`);
+    const {
+        result: {
+            block: {
+                header: { height },
+            },
+        },
+    } = await block.json();
+
+    console.log('Height', height);
+    return height;
+};
+harden(getLatestBlockHeight);
+
+const makeWalletWatchTrigger = watchSmartWallet => {
+    let isWatching = false;
+
+    const triggerWatch = async states => {
+        if (isWatching === true) return;
+        const [pollResult] = await Promise.all(states);
+        const { height } = pollResult;
+        watchSmartWallet(+height + 1);
+        isWatching = true;
+    };
+
+    return harden({
+        triggerWatch,
+    });
+};
+harden(makeWalletWatchTrigger);
+
+const bigIntReplacer = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
+harden(bigIntReplacer);
+
+const makeInboundExternalManager = getState => {
+    const trace = makeTracer('InboundExternalManager', true);
+
+    const fetchExternalPrice = () => {
+        const {
+            initialized,
+            [StateManagerKeys.BID_BRAND]: bidBrand,
+            [StateManagerKeys.COLLATERAL_BRAND]: colBrand,
+            [StateManagerKeys.BOOK_STATE]: { startPrice },
+        } = getState();
+        trace('fetchExternalPrice', {
+            initialized,
+            bidBrand,
+            colBrand,
+            startPrice,
+        });
+
+        if (!initialized)
+            return Promise.reject({
+                msg: 'State not initialized',
+                data: { initialized, bidBrand, colBrand },
+            });
+
+        return Promise.resolve(startPrice);
+    };
+
+    const sell = async sellUtils => {
+        trace('sell', sellUtils);
+
+        return harden({
+            msg: 'Sold',
+            data: {
+                txHash: '0x01234',
+                sellUtils,
+            },
+        });
+    };
+
+    return harden({
+        sell,
+        fetchExternalPrice,
+    });
+};
+harden(makeInboundExternalManager);
+
 export {
     getConfig,
     getBrandsFromBook,
-    setAuctionBrands,
     calculateDPPercentageDelta,
     calculateDPExactDelta,
     calculateBidUtils,
     setBookState,
     makeCreditManager,
     calculateSellUtils,
+    getLatestBlockHeight,
+    makeWalletWatchTrigger,
+    makeInboundExternalManager,
+    bigIntReplacer,
 };

@@ -1,7 +1,14 @@
 import { assert } from '@agoric/assert';
 import { StateManagerKeys } from './constants.js';
 import { makeCreditManager } from './helpers.js';
-import { makeScalarBigMapStore } from '@agoric/vat-data';
+import { makeFakeVirtualStuff } from '@agoric/swingset-liveslots/tools/fakeVirtualSupport.js';
+import { makeTracer } from '@agoric/internal/src/index.js';
+
+const {
+    cm: { makeScalarBigMapStore },
+} = makeFakeVirtualStuff();
+
+const trace = makeTracer('AuctionState', true);
 
 const makeAuctionStateManager = arbConfig => {
     const state = {
@@ -15,6 +22,7 @@ const makeAuctionStateManager = arbConfig => {
     };
 
     const updateState = (stateKey, data) => {
+        trace('updateState', stateKey, data);
         const { [stateKey]: currentState } = state;
         assert(currentState !== undefined, 'Invalid stateKey');
 
@@ -52,16 +60,28 @@ const makeAuctionStateManager = arbConfig => {
             denominator: { brand: colBrand },
         } = data.currentPriceLevel;
 
+        console.log('[tryInit]', {
+            bidBrand,
+            colBrand,
+        });
+
         state[StateManagerKeys.BID_BRAND] = bidBrand;
         state[StateManagerKeys.COLLATERAL_BRAND] = colBrand;
         state[StateManagerKeys.CREDIT_MANAGER] = makeCreditManager(bidBrand, arbConfig.credit);
     };
 
     const handleWalletUpdate = data => {
+        trace('handleWalletUpdate - initialized', checkInitialized());
         if (!checkInitialized()) return;
 
         const { creditManager } = state;
         const { status, updated } = data;
+        trace('handleWalletUpdate - data', status);
+
+        if (!status.id.startsWith('place-bid-')) {
+            trace('handleWalletUpdate', 'Not bot transaction', status.id);
+            return;
+        }
 
         if (updated === 'balance') return;
 
@@ -72,13 +92,16 @@ const makeAuctionStateManager = arbConfig => {
         if (status.payouts) {
             const { Bid: excessBidAmount } = status.payouts;
             if (!excessBidAmount) return;
+            trace('handleWalletUpdate', 'incrementCredit by', excessBidAmount);
             creditManager.incrementCredit(excessBidAmount);
-        } else if (!status.payouts && status.numWantsSatisfied && status.numWantsSatisfied === 1) {
+        } else if (!status.payouts && !status.numWantsSatisfied) {
             const {
                 give: { Bid: paidBidAmount },
             } = status.proposal;
+            trace('handleWalletUpdate', 'decrementCredit by', paidBidAmount);
             creditManager.decrementCredit(paidBidAmount);
         }
+        trace('handleWalletUpdate', 'credit', creditManager.getCredit());
     };
 
     const checkInitialized = () => {
@@ -94,10 +117,11 @@ const makeAuctionStateManager = arbConfig => {
         const { [StateManagerKeys.WALLET_UPDATE]: offers } = state;
 
         if (!offers.has(data.status.id)) {
+            trace('writeOffer', 'write new offer', data.status.id);
             offers.init(data.status.id, data);
             return;
         }
-
+        trace('writeOffer', 'update offer', data.status.id);
         offers.set(data.status.id, data);
     };
 

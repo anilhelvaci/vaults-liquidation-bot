@@ -209,6 +209,7 @@ const makeMockArbitrager = ({ suite, utils, configIndex, finish = () => console.
         bidManager,
         arbConfig,
         finish,
+        onBid: () => console.log('DummyOnBid'),
     });
     const notify = (type, data) => {
         stateManager.updateState(type, data);

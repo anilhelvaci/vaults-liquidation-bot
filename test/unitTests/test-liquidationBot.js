@@ -9,8 +9,7 @@ import { eventLoopIteration } from '@agoric/internal/src/testing-utils.js';
 import { natSafeMath } from '@agoric/zoe/src/contractSupport/safeMath.js';
 import { StateManagerKeys } from '../../src/constants.js';
 import { AmountMath } from '@agoric/ertp/src/index.js';
-import { makeRatio } from '@agoric/ui-components/src/ratio.js';
-import { ratioGTE } from '@agoric/zoe/src/contractSupport/index.js';
+import { ratioGTE, makeRatio } from '@agoric/zoe/src/contractSupport/index.js';
 
 const BIDDER_ADDRESS = 'agoricBidder';
 const BASE_POINTS = 10_000n;
@@ -636,16 +635,13 @@ test.serial('checks-out-when-not-enough-credit', async t => {
     t.is(schedules.nextAuctionSchedule?.endTime.absValue, 205n);
     await suite.advanceTo(170n); // Start next auction
 
-    const finish = async stateSnapshot => {
+    const finish = async getBidLog => {
         t.log('Inside finish body');
-        t.like(stateSnapshot, {
-            bookState: {
-                currentPriceLevel: makeRatioFromAmounts(
-                    suite.makeBid(natSafeMath.multiply(natSafeMath.floorDivide(7_850_000n, 100n), 85n)),
-                    suite.makeCollateral(1_000_000n),
-                ),
-            },
-        });
+        const actualBidLogP = getBidLog();
+        const expectedBidLogP = arbitrageManager.getBidLog();
+
+        const [actualBidLog, expectedBidLog] = await Promise.allSettled([actualBidLogP, expectedBidLogP]);
+        t.deepEqual(actualBidLog, expectedBidLog);
     };
 
     // Use percentage strategy

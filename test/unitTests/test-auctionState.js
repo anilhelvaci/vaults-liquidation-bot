@@ -72,7 +72,6 @@ test('handleWalletUpdate', t => {
         status: {
             id: 'place-bid-0',
             proposal: { give: { Bid: moola.make(40_000_000n) } },
-            numWantsSatisfied: 1,
             result: 'Your bid has been accepted',
         },
     });
@@ -88,7 +87,6 @@ test('handleWalletUpdate', t => {
             status: {
                 id: 'place-bid-0',
                 proposal: { give: { Bid: moola.make(40_000_000n) } },
-                numWantsSatisfied: 1,
                 result: 'Your bid has been accepted',
             },
         },
