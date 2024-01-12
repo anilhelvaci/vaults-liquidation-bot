@@ -83,8 +83,75 @@ it from another account.
 Before you run the bot you must first adjust the config file, `strategy.config.js` 
 in our case, to serve your specific purposes.
 
+**What can you do with this config file?**
+* Specify the account name and address for signing transactions
+* Choose how your bot behaves when buying collateral from an auction
 
+Here's the structure of config file;
+```js
+export default harden({
+    account: {
+        name: 'user1',
+        address: 'agoric1qupryrguze6d4p9rrw6f2rnytqll7pahpk65ru',
+    },
+    strategies: [
+       {
+          delta: {
+             type: 'exact',
+             value: 500000n, // 0.5 IST
+          },
+          spend: {
+             type: 'flash',
+          },
+          credit: 100_000_000n, // 100 IST credit
+          collateralName: 'ATOM',
+          bookId: 0,
+          retryInterval: 30 * 1000, // 30 seconds in ms
+          maxSellValue: 1000_000_000n, // Can sell 1k ATOM max to avoid big price impacts on Osmosis
+       },
+       ...
+    ],
+});
+```
+
+**What strategies are available?**
+
+Liquidation bot works comparing the `currentPriceLevel` coming from the `vstorage`
+to the starting price of the auction. It waits until a pre-determined difference
+between two prices occur and only then it places the bids.
+* `delta`: The predetermined amount of difference.
+  * `type`: `exact` | `percentage`. You can either specify an exact amount of difference
+like 0.5 IST or percentage from the starting price like `3% off from the starting price`
+  * `value`: Changes according to what the `type` is set to. For instance, when `type === 'exact'`
+the `value` can be 500000uist if the user wants a 0.5 IST difference. If `type === 'percentage'`
+the `value` would be 3n for 3% difference from the starting price.
+
+* `spend`: Specifies how the amount of credit assigned to the bot will be spent.
+  * `type`: Possible values `flash` | `controlled`
+    * `flash`: Uses the whole credit to place one bid
+    * `controlled`: Splits the credit into smaller amounts and uses those small amounts
+to place multiple bids as the `currentPriceLevel` keeps going down.
+  * `controlFactor`: Optional. Only used when `type === controlled`. A bigint that
+is used to calculate following formula => `amountIn = credit / controlFactor`
+
+* `credit`: Total value of `uist` this bot is allowed to spend.
+* `collateralName`: Name of the collateral.
+* `bookId`: Variable used to calculate the path for => `published.auctioneer.{bookID}` in `vstorage`
+* `retryInterval`: Used for an arbitrage case that is not supported yet. 
+* `maxSellValue`: Used for an arbitrage case that is not supported yet. 
 
 ### Running the bot
+Open a new terminal;
+
+```shell
+## LIQUIDATION_BOT_PATH = This can be any place you wish to install this project on your host machine
+cd $LIQUIDATION_BOT_PATH
+git clone https://github.com/anilhelvaci/vaults-liquidation-bot.git
+cd vaults-liquidation-bot
+agoric install
+./liquidate.sh
+```
+
+A window to a file named `liquidate-logs.txt` should pop up showing logs after `liquidate.sh` is invoked.
 
 ## Analyze what happened
