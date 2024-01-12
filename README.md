@@ -1,4 +1,4 @@
-# vaults-liquidation-bot [DRAFT]
+# vaults-liquidation-bot
 A piece of software that automates the bidding process for The Inter Protocol's vault liquidation auctions. Suitable for arbitrageurs and/or individual use. 
 
 ## Disclaimer
@@ -155,3 +155,307 @@ agoric install
 A window to a file named `liquidate-logs.txt` should pop up showing logs after `liquidate.sh` is invoked.
 
 ## Analyze what happened
+When you kill the process running liquidation bot, there two files guaranteed to 
+be created. Namely;
+* `liquidate-logs.txt`: Contains the full logs of the process. Mostly for debugging.
+* `bids-{timestamp}.log.json`: Contains the history of the bids.
+
+There's one more file to be created if any error occurs;
+* `error-{timestamp}.log`: Contains any thrown error messages and their regarding stack traces.
+
+### What data does the big log contain?
+Bid log comprises of the decisions liquidation bot made when an update from the
+auction is received along with a state snapshot used in the decision process at the
+time of update received.
+
+There are four possible bid log values;
+* `No Bid`
+
+  Bot made the comparision between the current prices and desired price then decided 
+not to bid. Here are the properties;
+  * `msg`: "No Bid"
+  * `data`: A full snapshot of the bot's state at that point in time
+     <details>
+      <summary>Sample</summary> 
+
+      ```json
+      {
+        "msg": "No Bid",
+        "data": {
+          "bidBrand": {},
+          "colBrand": {},
+          "bookState": {
+            "collateralAvailable": {
+              "brand": {},
+              "value": "1000000000"
+            },
+            "currentPriceLevel": {
+              "numerator": {
+                "brand": {},
+                "value": "7850000"
+              },
+              "denominator": {
+                "brand": {},
+                "value": "1000000"
+              }
+            },
+            "remainingProceedsGoal": {
+              "brand": {},
+              "value": "35000000"
+            },
+            "startCollateral": {
+              "brand": {},
+              "value": "1000000000"
+            },
+            "startPrice": {
+              "denominator": {
+                "brand": {},
+                "value": "1000000"
+              },
+              "numerator": {
+                "brand": {},
+                "value": "7850000"
+              }
+            },
+            "startProceedsGoal": {
+              "brand": {},
+              "value": "35000000"
+            }
+          },
+          "scheduleState": {
+            "activeStartTime": {
+              "absValue": "43202",
+              "timerBrand": {}
+            },
+            "nextDescendingStepTime": {
+              "absValue": "43562",
+              "timerBrand": {}
+            },
+            "nextStartTime": {
+              "absValue": "46802",
+              "timerBrand": {}
+            }
+          },
+          "governanceState": {
+            "current": {
+              "AuctionStartDelay": {
+                "type": "relativeTime",
+                "value": {
+                  "relValue": "2",
+                  "timerBrand": {}
+                }
+              },
+              "ClockStep": {
+                "type": "relativeTime",
+                "value": {
+                  "relValue": "180",
+                  "timerBrand": {}
+                }
+              },
+              "DiscountStep": {
+                "type": "nat",
+                "value": "500"
+              },
+              "Electorate": {
+                "type": "invitation",
+                "value": {
+                  "brand": {},
+                  "value": [
+                    {
+                      "description": "questionPoser",
+                      "handle": {},
+                      "installation": {},
+                      "instance": {}
+                    }
+                  ]
+                }
+              },
+              "LowestRate": {
+                "type": "nat",
+                "value": "6500"
+              },
+              "PriceLockPeriod": {
+                "type": "relativeTime",
+                "value": {
+                  "relValue": "1800",
+                  "timerBrand": {}
+                }
+              },
+              "StartFrequency": {
+                "type": "relativeTime",
+                "value": {
+                  "relValue": "3600",
+                  "timerBrand": {}
+                }
+              },
+              "StartingRate": {
+                "type": "nat",
+                "value": "10500"
+              }
+            }
+          },
+          "creditManager": {},
+          "walletUpdate": {},
+          "initialized": true,
+          "offers": [],
+          "worstDesiredPrice": {
+            "numerator": {
+              "brand": {},
+              "value": "7550000"
+            },
+            "denominator": {
+              "brand": {},
+              "value": "1000000"
+            }
+          },
+          "externalPrice": {
+            "denominator": {
+              "brand": {},
+              "value": "1000000"
+            },
+            "numerator": {
+              "brand": {},
+              "value": "7850000"
+            }
+          }
+        }
+      }
+      ```      
+
+      </details>   
+* `Bid Placed`
+  
+  Bot decided that current price satisfies the desired price and sent the bid offer
+to the auction contract.
+  * `msg`: "Bid Placed"
+    * `data`:
+      <details>
+      <summary>Sample</summary> 
+
+      ```json
+        {
+         "msg": "Bid Placed",
+        "data": {
+          "offerId": "place-bid-0-1704887308303",
+          "bidUtils": {
+            "bidAmount": {
+              "brand": {},
+              "value": "25000000"
+            },
+            "maxColAmount": {
+              "brand": {},
+              "value": "3352329"
+            },
+            "price": {
+              "numerator": {
+                "brand": {},
+                "value": "7550000"
+              },
+              "denominator": {
+                "brand": {},
+                "value": "1000000"
+              }
+            }
+          },
+          "worstDesiredPrice": {
+            "numerator": {
+              "brand": {},
+              "value": "7550000"
+            },
+            "denominator": {
+              "brand": {},
+              "value": "1000000"
+            }
+          },
+          "externalPrice": {
+            "denominator": {
+              "brand": {},
+              "value": "1000000"
+            },
+            "numerator": {
+              "brand": {},
+              "value": "7850000"
+            }
+          },
+          "currentPriceLevel": {
+            "numerator": {
+              "brand": {},
+              "value": "7457500"
+            },
+            "denominator": {
+              "brand": {},
+              "value": "1000000"
+            }
+          }
+        }
+      }
+      ```      
+        
+      </details>
+    
+* `Already existing bid`
+  
+  Liquidation bot aims to place only one bid per auction price as the auction lowers 
+price by 5% on every clock step. This is what you'll see when the bot receives a state
+update from the auction and there's already a bid placed for auction's current price
+at that point in time.
+  * `msg`: "Already existing bid. Either pending or success"
+  * `data`: Contains the placed bid's offer id and it's state.
+      <details>
+      <summary>Sample</summary> 
+
+      ```json
+      {
+        "msg": "Already existing bid. Either pending or success",
+        "data": {
+          "currentBid": {
+          "offerId": "place-bid-2-1704887728055"
+          }
+         }
+      }
+      ```    
+
+      </details>
+* `Insufficient Credit`
+
+  The bot stops trying to add new bids when there isn't enough credit left. You'll
+see this as the last message in your bid log, most of the time.
+  * `msg`: "Insufficient credit"
+  * `data`: Contains information about how much credit is left how much the bot tried
+to spend.
+    
+    <details>
+    <summary>Sample</summary>
+    
+    ```json
+    {
+      "msg": "Insufficient credit",
+      "data": {
+        "bidUtils": {
+          "bidAmount": {
+            "brand": {},
+            "value": "25000000"
+          },
+          "maxColAmount": {
+            "brand": {},
+            "value": "4549590"
+          },
+          "price": {
+            "numerator": {
+              "brand": {},
+              "value": "7350000"
+            },
+            "denominator": {
+              "brand": {},
+              "value": "1000000"
+            }
+          }
+        },
+        "credit": {
+          "brand": {},
+          "value": "12"
+        }
+      }
+    }
+    ```
+    </details>
