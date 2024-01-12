@@ -8,7 +8,7 @@ to the project if you run this against Mainnet.
 ## How to run it
 This is a Nodejs project that hasn't made its way to a frontend yet. This means
 you'll need a text editor, like VSCode, to edit [strategy.config.js](strategy.config.js) before running.
-See [Anatomy of the strategy.config.js]() for detailed explanation.
+See [Anatomy of the strategy.config.js](#anatomy-of-the-strategyconfigjs) for detailed explanation.
 ### Prerequisites
 Here are the host machine requirements to run the bot;
 * A shell terminal (zsh, bash, etc.)
@@ -73,7 +73,7 @@ according to your need;
 
 ### Send IST to the signing account
 Liquidation happens by buying the collateral asset using IST which means the agoric
-account bot uses must have some amount of IST credit in its balance so that the bot
+account bot users must have some amount of IST credit in its balance so that the bot
 can build and send valid offers. 
 
 You can use the [options here](https://inter.trade/find#all) to find IST or just send
@@ -87,7 +87,7 @@ in our case, to serve your specific purposes.
 * Specify the account name and address for signing transactions
 * Choose how your bot behaves when buying collateral from an auction
 
-Here's the structure of config file;
+Here's the structure of the config file;
 ```js
 export default harden({
     account: {
@@ -116,9 +116,9 @@ export default harden({
 
 **What strategies are available?**
 
-Liquidation bot works comparing the `currentPriceLevel` coming from the `vstorage`
+Liquidation bot works by comparing the `currentPriceLevel` coming from the `vstorage`
 to the starting price of the auction. It waits until a pre-determined difference
-between two prices occur and only then it places the bids.
+between two prices occurs and only then it places the bids.
 * `delta`: The predetermined amount of difference.
   * `type`: `exact` | `percentage`. You can either specify an exact amount of difference
 like 0.5 IST or percentage from the starting price like `3% off from the starting price`
@@ -132,7 +132,7 @@ the `value` would be 3n for 3% difference from the starting price.
     * `controlled`: Splits the credit into smaller amounts and uses those small amounts
 to place multiple bids as the `currentPriceLevel` keeps going down.
   * `controlFactor`: Optional. Only used when `type === controlled`. A bigint that
-is used to calculate following formula => `amountIn = credit / controlFactor`
+is used to calculate the following formula => `amountIn = credit / controlFactor`
 
 * `credit`: Total value of `uist` this bot is allowed to spend.
 * `collateralName`: Name of the collateral.
@@ -155,7 +155,7 @@ agoric install
 A window to a file named `liquidate-logs.txt` should pop up showing logs after `liquidate.sh` is invoked.
 
 ## Analyze what happened
-When you kill the process running liquidation bot, there two files guaranteed to 
+When you kill the process running the liquidation bot, there are two files guaranteed to 
 be created. Namely;
 * `liquidate-logs.txt`: Contains the full logs of the process. Mostly for debugging.
 * `bids-{timestamp}.log.json`: Contains the history of the bids.
@@ -163,7 +163,7 @@ be created. Namely;
 There's one more file to be created if any error occurs;
 * `error-{timestamp}.log`: Contains any thrown error messages and their regarding stack traces.
 
-### What data does the big log contain?
+### What data does the bid log contain?
 Bid log comprises of the decisions liquidation bot made when an update from the
 auction is received along with a state snapshot used in the decision process at the
 time of update received.
@@ -171,7 +171,7 @@ time of update received.
 There are four possible bid log values;
 * `No Bid`
 
-  Bot made the comparision between the current prices and desired price then decided 
+  Bot made the comparison between the current prices and desired price then decided 
 not to bid. Here are the properties;
   * `msg`: "No Bid"
   * `data`: A full snapshot of the bot's state at that point in time
@@ -396,11 +396,11 @@ to the auction contract.
 * `Already existing bid`
   
   Liquidation bot aims to place only one bid per auction price as the auction lowers 
-price by 5% on every clock step. This is what you'll see when the bot receives a state
-update from the auction and there's already a bid placed for auction's current price
+the price by 5% on every clock step. This is what you'll see when the bot receives a state
+update from the auction and there's already a bid placed for the auction's current price
 at that point in time.
   * `msg`: "Already existing bid. Either pending or success"
-  * `data`: Contains the placed bid's offer id and it's state.
+  * `data`: Contains the placed bid's offer id and its state.
       <details>
       <summary>Sample</summary> 
 
